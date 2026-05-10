@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="IBI Invoice Separator — Extract clean tax invoices from Flipkart shipping label + invoice PDFs. Built by India Business International.">
+<meta property="og:title" content="IBI Invoice Separator">
+<meta property="og:description" content="Extract clean tax invoices from Flipkart shipping label + invoice PDFs.">
+<meta property="og:type" content="website">
+<title>IBI Invoice Separator | India Business International</title>
+
+<!-- Favicon: IBI in #00c5ff on black, Roboto -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%23000000'/><text x='50' y='68' font-family='Roboto,Arial,sans-serif' font-size='40' font-weight='900' text-anchor='middle' fill='%2300c5ff'>IBI</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%23000000'/><text x='50' y='68' font-family='Roboto,Arial,sans-serif' font-size='40' font-weight='900' text-anchor='middle' fill='%2300c5ff'>IBI</text></svg>">
+
+<!-- Roboto font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+<!-- pdf-lib for PDF manipulation -->
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+<style>
+:root {
+    --primary: #00c5ff;
+    --primary-dim: #0090ba;
+    --primary-soft: rgba(0, 197, 255, 0.12);
+    --primary-glow: rgba(0, 197, 255, 0.35);
+
+    --bg: #000000;
+    --bg-card: #0d0d0d;
+    --bg-elevated: #161616;
+    --bg-input: #1a1a1a;
+
+    --text: #ffffff;
+    --text-muted: #a0a0a0;
+    --text-dim: #6a6a6a;
+
+    --border: #262626;
+    --border-strong: #3a3a3a;
+
+    --header-bg: #000000;
+    --header-text: #00c5ff;
+    --footer-bg: #000000;
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 32px rgba(0, 197, 255, 0.18);
+
+    --success: #4ade80;
+    --error: #f87171;
+    --info: #00c5ff;
+}
+
+[data-theme="light"] {
+    --bg: #f4f6fa;
+    --bg-card: #ffffff;
+    --bg-elevated: #f9fafc;
+    --bg-input: #ffffff;
+
+    --text: #0a0a0a;
+    --text-muted: #555a66;
+    --text-dim: #9098a3;
+
+    --border: #e3e7ee;
+    --border-strong: #cdd3dc;
+
+    --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 6px 24px rgba(15, 23, 42, 0.08);
+    --shadow-glow: 0 6px 32px rgba(0, 197, 255, 0.14);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============ HEADER (always black bg per spec) ============ */
+header {
+    background: #000000;
+    border-bottom: 2px solid var(--primary);
+    padding: 20px 5%;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0, 197, 255, 0.10);
+}
+
+.header-inner {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.ibi-logo {
+    height: 76px;
+    width: auto;
+    max-width: 100%;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* Theme toggle switch */
+.theme-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.theme-toggle-label {
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.theme-toggle {
+    position: relative;
+    display: inline-block;
+    width: 56px;
+    height: 30px;
+}
+.theme-toggle input { opacity: 0; width: 0; height: 0; }
+.theme-toggle .slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #1a1a1a;
+    border: 1.5px solid var(--primary);
+    border-radius: 30px;
+    transition: 0.3s;
+}
+.theme-toggle .slider::before {
+    content: "🌙";
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 2px;
+    top: 2px;
+    background: var(--primary);
+    border-radius: 50%;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+.theme-toggle input:checked + .slider::before {
+    transform: translateX(26px);
+    content: "☀️";
+}
+
+/* ============ MAIN ============ */
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 5% 24px;
+}
+
+.hero {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+h1 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 38px;
+    font-weight: 900;
+    color: var(--primary);
+    background: #000000;
+    display: inline-block;
+    padding: 14px 32px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    box-shadow: 0 6px 24px rgba(0, 197, 255, 0.15);
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 16px;
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* ============ CARD ============ */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 22px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    border-color: var(--border-strong);
+}
+
+.section-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    background: #000000;
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 6px;
+    margin-bottom: 22px;
+    letter-spacing: 0.3px;
+}
+
+/* ============ DROP ZONE ============ */
+.drop-zone {
+    border: 2px dashed var(--border-strong);
+    border-radius: 12px;
+    padding: 44px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: var(--bg-elevated);
+}
+
+.drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.drop-zone-icon {
+    width: 56px;
+    height: 56px;
+    color: var(--primary);
+    margin: 0 auto 14px;
+    display: block;
+}
+
+.drop-zone-text {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+
+.drop-zone-hint {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.drop-zone-hint strong {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+#fileInput { display: none; }
+
+/* ============ FILE LIST ============ */
+.file-list {
+    margin-top: 22px;
+}
+.file-list:empty { display: none; }
+
+.file-list-header {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 12px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s ease;
+}
+
+.file-item:hover { border-color: var(--primary); }
+
+.file-icon {
+    color: var(--primary);
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+}
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.file-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-size {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.file-remove {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    font-family: inherit;
+}
+
+.file-remove:hover {
+    background: var(--error);
+    color: white;
+    border-color: var(--error);
+}
+
+/* ============ SLIDER CONTROL ============ */
+.slider-control { margin-top: 4px; }
+
+.slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 14px;
+    color: var(--text-muted);
+}
+
+.slider-label .label-text { font-weight: 500; }
+
+.slider-label .value {
+    color: var(--primary);
+    font-weight: 700;
+    background: var(--primary-soft);
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    min-width: 48px;
+    text-align: center;
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(0, 197, 255, 0.18);
+    transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+input[type="range"]::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 0 3px rgba(0, 197, 255, 0.18);
+}
+
+.slider-help {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 12px;
+    line-height: 1.55;
+    padding: 12px 14px;
+    background: var(--bg-elevated);
+    border-left: 3px solid var(--primary);
+    border-radius: 6px;
+}
+
+/* ============ BUTTONS ============ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1.5px solid transparent;
+    text-decoration: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #000000;
+    box-shadow: 0 4px 20px rgba(0, 197, 255, 0.28);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 26px rgba(0, 197, 255, 0.45);
+}
+
+.btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+.btn-primary:disabled {
+    background: var(--bg-elevated);
+    color: var(--text-dim);
+    cursor: not-allowed;
+    box-shadow: none;
+    border-color: var(--border);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--primary);
+    color: #000000;
+    transform: translateY(-1px);
+}
+
+.btn-secondary:disabled {
+    color: var(--text-dim);
+    border-color: var(--border);
+    cursor: not-allowed;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: var(--border-strong);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.btn-large {
+    width: 100%;
+    padding: 18px 32px;
+    font-size: 17px;
+}
+
+.actions-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.actions-row .btn {
+    flex: 1;
+    min-width: 140px;
+}
+
+/* Spinner */
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============ PREVIEW ============ */
+.preview-section {
+    display: none;
+}
+
+.preview-section.active {
+    display: block;
+    animation: slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.preview-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    font-size: 14px;
+}
+
+.meta-pill {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.meta-pill strong {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.preview-iframe {
+    width: 100%;
+    height: 640px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #ffffff;
+    margin-bottom: 18px;
+    display: block;
+}
+
+/* ============ STATUS TOAST ============ */
+.status {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translate(-50%, 100px);
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 14px;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    max-width: calc(100% - 32px);
+    text-align: center;
+    pointer-events: none;
+}
+
+.status.show {
+    transform: translate(-50%, 0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.status-success { background: var(--success); color: #033010; }
+.status-error { background: var(--error); color: #3b0a0a; }
+.status-info { background: var(--primary); color: #001f2e; }
+
+/* ============ FOOTER ============ */
+footer {
+    background: #000000;
+    color: #a0a0a0;
+    padding: 28px 5%;
+    text-align: center;
+    border-top: 2px solid var(--primary);
+    font-size: 14px;
+    margin-top: 32px;
+}
+
+footer .brand {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+footer a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+footer a:hover { text-decoration: underline; }
+
+/* ============ INFO BANNER ============ */
+.info-banner {
+    background: var(--primary-soft);
+    border: 1px solid var(--primary);
+    color: var(--text);
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.55;
+}
+
+.info-banner svg {
+    color: var(--primary);
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* ============ MOBILE ============ */
+@media (max-width: 768px) {
+    header { padding: 14px 4%; }
+    .ibi-logo { height: 54px; }
+    .theme-toggle-label { display: none; }
+
+    main { padding: 28px 4% 16px; }
+    h1 { font-size: 26px; padding: 10px 20px; }
+    .subtitle { font-size: 15px; }
+
+    .card { padding: 20px; border-radius: 12px; }
+    .section-title { font-size: 16px; padding: 7px 14px; }
+
+    .drop-zone { padding: 32px 16px; }
+    .drop-zone-text { font-size: 15px; }
+    .drop-zone-icon { width: 48px; height: 48px; }
+
+    .preview-iframe { height: 500px; }
+
+    .actions-row { flex-direction: column; }
+    .actions-row .btn { width: 100%; min-width: auto; }
+    .btn-large { padding: 16px 24px; font-size: 16px; }
+
+    .file-name { font-size: 13px; }
+}
+
+@media (max-width: 480px) {
+    .ibi-logo { height: 46px; }
+    h1 { font-size: 22px; padding: 9px 16px; }
+    .preview-iframe { height: 440px; }
+}
+
+/* ============ PRINT ============ */
+@media print {
+    header, footer, .upload-card, .controls-card, .process-row, .actions-row, .status, .preview-meta, .info-banner {
+        display: none !important;
+    }
+    body { background: white; color: black; }
+    .preview-section { display: block !important; }
+    .card { border: none; padding: 0; margin: 0; }
+    .preview-iframe { height: 100vh; border: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header>
+    <div class="header-inner">
+        <!-- IBI Dot-grid Logo (recreated as inline SVG) -->
+        <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
+            <g fill="#00c5ff">
+                <!-- Column 1 (smallest dots) -->
+                <circle cx="22" cy="22" r="5"/>
+                <circle cx="22" cy="62" r="5"/>
+                <circle cx="22" cy="102" r="5"/>
+                <circle cx="22" cy="142" r="5"/>
+                <circle cx="22" cy="182" r="5"/>
+                <!-- Column 2 -->
+                <circle cx="60" cy="22" r="6"/>
+                <circle cx="60" cy="62" r="9"/>
+                <circle cx="60" cy="102" r="9"/>
+                <circle cx="60" cy="142" r="9"/>
+                <circle cx="60" cy="182" r="6"/>
+                <!-- Column 3 -->
+                <circle cx="102" cy="22" r="9"/>
+                <circle cx="102" cy="62" r="11"/>
+                <circle cx="102" cy="102" r="13"/>
+                <circle cx="102" cy="142" r="13"/>
+                <circle cx="102" cy="182" r="11"/>
+                <!-- Column 4 -->
+                <circle cx="148" cy="22" r="13"/>
+                <circle cx="148" cy="62" r="14"/>
+                <circle cx="148" cy="102" r="15"/>
+                <circle cx="148" cy="142" r="16"/>
+                <circle cx="148" cy="182" r="16"/>
+                <!-- Column 5 (largest) -->
+                <circle cx="200" cy="22" r="15"/>
+                <circle cx="200" cy="62" r="16"/>
+                <circle cx="200" cy="102" r="17"/>
+                <circle cx="200" cy="142" r="17"/>
+                <circle cx="200" cy="182" r="17"/>
+            </g>
+            <!-- Vertical separator -->
+            <line x1="240" y1="14" x2="240" y2="200" stroke="#00c5ff" stroke-width="2.5"/>
+            <!-- Text block -->
+            <g font-family="Roboto, Arial, sans-serif" fill="#00c5ff">
+                <text x="262" y="50" font-size="32" font-weight="900">INDIA</text>
+                <text x="262" y="98" font-size="32" font-weight="900">BUSINESS</text>
+                <text x="262" y="146" font-size="32" font-weight="900">INTERNATIONAL</text>
+                <text x="262" y="180" font-size="14" font-weight="300" letter-spacing="0.5">eCommerce for the World</text>
+            </g>
+        </svg>
+
+        <!-- Theme Toggle -->
+        <div class="theme-toggle-wrapper">
+            <span class="theme-toggle-label" id="themeLabel">DARK</span>
+            <label class="theme-toggle" aria-label="Toggle theme">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+</header>
+
+<!-- ============ MAIN ============ -->
+<main>
+    <section class="hero">
+        <h1>IBI INVOICE SEPARATOR</h1>
+        <p class="subtitle">Extract clean, print-ready tax invoices from Flipkart shipping label + invoice PDFs. Upload one or more files — the shipping label section is removed and only the tax invoice portion is retained.</p>
+    </section>
+
+    <div class="info-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,7H13V9H11V7M11,11H13V17H11V11Z"/></svg>
+        <div><strong style="color:var(--primary)">100% private — </strong>all PDF processing happens locally inside your browser. No file is ever uploaded to a server.</div>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="card upload-card">
+        <div class="section-title">UPLOAD PDF FILES</div>
+        <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Click or drop PDF files">
+            <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <div class="drop-zone-text">Drop PDF files here or click to browse</div>
+            <div class="drop-zone-hint">Supports <strong>multi-page</strong> Flipkart shipping label + invoice PDFs</div>
+            <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple>
+        </div>
+        <div class="file-list" id="fileList" aria-live="polite"></div>
+    </div>
+
+    <!-- Controls Card -->
+    <div class="card controls-card">
+        <div class="section-title">CROP SETTINGS</div>
+        <div class="slider-control">
+            <div class="slider-label">
+                <span class="label-text">Invoice Height (bottom portion of each page)</span>
+                <span class="value" id="cropValue">58%</span>
+            </div>
+            <input type="range" id="cropSlider" min="35" max="75" step="1" value="58" aria-label="Crop height percentage">
+            <div class="slider-help">
+                <strong style="color:var(--primary)">Default 58%</strong> is tuned for the standard Flipkart shipping-label + tax-invoice format and captures the full invoice from "Tax Invoice" header down to the Authorized Signature. <strong>Increase</strong> (60–65%) if any invoice header text is still clipped at the top; <strong>decrease</strong> (50–55%) if any shipping-label content bleeds through at the top. Your last-used value is remembered.
+            </div>
+        </div>
+    </div>
+
+    <!-- Process Button -->
+    <div class="process-row" style="margin-bottom: 24px;">
+        <button class="btn btn-primary btn-large" id="processBtn" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            <span id="processBtnLabel">EXTRACT INVOICES</span>
+        </button>
+    </div>
+
+    <!-- Preview Card -->
+    <div class="card preview-section" id="previewSection">
+        <div class="section-title">EXTRACTED INVOICES</div>
+        <div class="preview-meta" id="previewMeta"></div>
+        <iframe class="preview-iframe" id="previewIframe" title="Extracted Invoices Preview"></iframe>
+        <div class="actions-row">
+            <button class="btn btn-primary" id="downloadBtn" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                DOWNLOAD PDF
+            </button>
+            <button class="btn btn-secondary" id="printBtn" disabled>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                PRINT
+            </button>
+            <button class="btn btn-ghost" id="clearBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+                </svg>
+                CLEAR ALL
+            </button>
+        </div>
+    </div>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+    <div>Built for <span class="brand">India Business International</span> &middot; <span style="color: #00c5ff;">eCommerce for the World</span></div>
+    <div style="margin-top: 6px; font-size: 12px; opacity: 0.7;">All processing happens locally in your browser &middot; No data leaves your device</div>
+</footer>
+
+<!-- ============ STATUS TOAST ============ -->
+<div class="status" id="status" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* ===================== STATE ===================== */
+let uploadedFiles = [];
+let processedPdfBytes = null;
+let processedPdfUrl = null;
+let totalProcessedPages = 0;
+
+/* ===================== ELEMENTS ===================== */
+const $ = (id) => document.getElementById(id);
+const dropZone = $('dropZone');
+const fileInput = $('fileInput');
+const fileList = $('fileList');
+const processBtn = $('processBtn');
+const processBtnLabel = $('processBtnLabel');
+const cropSlider = $('cropSlider');
+const cropValue = $('cropValue');
+const previewSection = $('previewSection');
+const previewIframe = $('previewIframe');
+const previewMeta = $('previewMeta');
+const downloadBtn = $('downloadBtn');
+const printBtn = $('printBtn');
+const clearBtn = $('clearBtn');
+const themeToggle = $('themeToggle');
+const themeLabel = $('themeLabel');
+const status = $('status');
+
+/* ===================== THEME ===================== */
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.checked = theme === 'light';
+    themeLabel.textContent = theme === 'light' ? 'LIGHT' : 'DARK';
+    try { localStorage.setItem('ibi-theme', theme); } catch(e) {}
+}
+
+(function initTheme() {
+    let saved = 'dark';
+    try { saved = localStorage.getItem('ibi-theme') || 'dark'; } catch(e) {}
+    applyTheme(saved);
+})();
+
+themeToggle.addEventListener('change', () => {
+    applyTheme(themeToggle.checked ? 'light' : 'dark');
+});
+
+/* ===================== FILE UPLOAD ===================== */
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+    }
+});
+
+['dragenter', 'dragover'].forEach(evt => {
+    dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('drag-over');
+    });
+});
+
+['dragleave', 'drop'].forEach(evt => {
+    dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (evt === 'dragleave' && e.target !== dropZone) return;
+        dropZone.classList.remove('drag-over');
+    });
+});
+
+dropZone.addEventListener('drop', (e) => {
+    if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+    fileInput.value = '';
+});
+
+function handleFiles(files) {
+    const arr = Array.from(files);
+    const pdfs = arr.filter(f => f.type === 'application/pdf' || /\.pdf$/i.test(f.name));
+    const skipped = arr.length - pdfs.length;
+
+    if (pdfs.length === 0) {
+        showStatus('Please select PDF files only', 'error');
+        return;
+    }
+
+    // Avoid duplicates by name+size
+    pdfs.forEach(file => {
+        const exists = uploadedFiles.some(f => f.name === file.name && f.size === file.size);
+        if (!exists) uploadedFiles.push(file);
+    });
+
+    renderFileList();
+    processBtn.disabled = uploadedFiles.length === 0;
+
+    if (skipped > 0) showStatus(`${pdfs.length} PDF added · ${skipped} non-PDF skipped`, 'info');
+    else showStatus(`${pdfs.length} file${pdfs.length > 1 ? 's' : ''} added`, 'success');
+}
+
+function renderFileList() {
+    if (uploadedFiles.length === 0) {
+        fileList.innerHTML = '';
+        return;
+    }
+    let html = `<div class="file-list-header">Uploaded Files (${uploadedFiles.length})</div>`;
+    uploadedFiles.forEach((file, idx) => {
+        html += `
+            <div class="file-item">
+                <svg class="file-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                </svg>
+                <div class="file-info">
+                    <span class="file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+                    <span class="file-size">${formatSize(file.size)}</span>
+                </div>
+                <button class="file-remove" data-idx="${idx}" aria-label="Remove file" title="Remove">×</button>
+            </div>
+        `;
+    });
+    fileList.innerHTML = html;
+    fileList.querySelectorAll('.file-remove').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.currentTarget.dataset.idx, 10);
+            uploadedFiles.splice(idx, 1);
+            renderFileList();
+            processBtn.disabled = uploadedFiles.length === 0;
+        });
+    });
+}
+
+function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+/* ===================== CROP SLIDER ===================== */
+// Restore last-used crop value
+try {
+    const savedCrop = localStorage.getItem('ibi-crop');
+    if (savedCrop !== null) {
+        const v = parseInt(savedCrop, 10);
+        if (!isNaN(v) && v >= parseInt(cropSlider.min, 10) && v <= parseInt(cropSlider.max, 10)) {
+            cropSlider.value = v;
+            cropValue.textContent = v + '%';
+        }
+    }
+} catch (e) {}
+
+cropSlider.addEventListener('input', () => {
+    cropValue.textContent = cropSlider.value + '%';
+});
+
+cropSlider.addEventListener('change', () => {
+    try { localStorage.setItem('ibi-crop', cropSlider.value); } catch (e) {}
+});
+
+/* ===================== PROCESS PDFs ===================== */
+processBtn.addEventListener('click', async () => {
+    if (uploadedFiles.length === 0) return;
+    if (typeof PDFLib === 'undefined') {
+        showStatus('PDF library failed to load. Check your internet connection.', 'error');
+        return;
+    }
+
+    processBtn.disabled = true;
+    processBtnLabel.innerHTML = '<span class="spinner"></span> &nbsp;PROCESSING...';
+
+    try {
+        const cropPercent = parseInt(cropSlider.value, 10) / 100;
+        const newPdfDoc = await PDFLib.PDFDocument.create();
+        let totalPages = 0;
+        let processedFiles = 0;
+
+        for (const file of uploadedFiles) {
+            const arrayBuffer = await file.arrayBuffer();
+            let srcDoc;
+            try {
+                srcDoc = await PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+            } catch (e) {
+                console.warn('Skipping file (could not load):', file.name, e);
+                continue;
+            }
+
+            const pageIndices = srcDoc.getPageIndices();
+            const copiedPages = await newPdfDoc.copyPages(srcDoc, pageIndices);
+
+            copiedPages.forEach(page => {
+                const { width, height } = page.getSize();
+                const cropHeight = height * cropPercent;
+                // Crop to bottom portion (which contains the tax invoice)
+                page.setMediaBox(0, 0, width, cropHeight);
+                page.setCropBox(0, 0, width, cropHeight);
+                page.setTrimBox(0, 0, width, cropHeight);
+                page.setBleedBox(0, 0, width, cropHeight);
+                newPdfDoc.addPage(page);
+                totalPages++;
+            });
+
+            processedFiles++;
+        }
+
+        if (totalPages === 0) {
+            throw new Error('No readable pages were found in the uploaded PDFs.');
+        }
+
+        // Set PDF metadata
+        newPdfDoc.setTitle('IBI Extracted Invoices');
+        newPdfDoc.setAuthor('India Business International');
+        newPdfDoc.setProducer('IBI Invoice Separator');
+        newPdfDoc.setCreator('IBI Invoice Separator');
+        newPdfDoc.setCreationDate(new Date());
+
+        const bytes = await newPdfDoc.save();
+        processedPdfBytes = bytes;
+        totalProcessedPages = totalPages;
+
+        if (processedPdfUrl) URL.revokeObjectURL(processedPdfUrl);
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        processedPdfUrl = URL.createObjectURL(blob);
+
+        // Render preview
+        previewIframe.src = processedPdfUrl;
+        previewMeta.innerHTML = `
+            <span class="meta-pill"><strong>${totalPages}</strong> invoice${totalPages > 1 ? 's' : ''}</span>
+            <span class="meta-pill">From <strong>${processedFiles}</strong> file${processedFiles > 1 ? 's' : ''}</span>
+            <span class="meta-pill"><strong>${formatSize(bytes.length)}</strong> output</span>
+            <span class="meta-pill">Crop: <strong>${cropSlider.value}%</strong></span>
+        `;
+        previewSection.classList.add('active');
+        downloadBtn.disabled = false;
+        printBtn.disabled = false;
+
+        showStatus(`✓ Extracted ${totalPages} invoice${totalPages > 1 ? 's' : ''} successfully`, 'success');
+
+        setTimeout(() => {
+            previewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+
+    } catch (err) {
+        console.error('Processing error:', err);
+        showStatus('Error: ' + (err.message || 'Could not process PDFs'), 'error');
+    } finally {
+        processBtn.disabled = false;
+        processBtnLabel.textContent = 'EXTRACT INVOICES';
+    }
+});
+
+/* ===================== DOWNLOAD ===================== */
+downloadBtn.addEventListener('click', () => {
+    if (!processedPdfUrl) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.href = processedPdfUrl;
+    a.download = `IBI_Invoices_${today}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showStatus('Download started', 'info');
+});
+
+/* ===================== PRINT ===================== */
+printBtn.addEventListener('click', () => {
+    if (!processedPdfUrl) return;
+
+    // Primary approach: print the iframe contents
+    try {
+        const win = previewIframe.contentWindow;
+        if (win) {
+            win.focus();
+            win.print();
+            return;
+        }
+    } catch (e) {
+        console.warn('Iframe print failed, falling back:', e);
+    }
+
+    // Fallback: open in new window/tab and print
+    const w = window.open(processedPdfUrl, '_blank');
+    if (w) {
+        const tryPrint = () => {
+            try { w.focus(); w.print(); } catch (e) { console.warn('Fallback print:', e); }
+        };
+        if (w.document && w.document.readyState === 'complete') tryPrint();
+        else w.addEventListener('load', tryPrint);
+    } else {
+        showStatus('Please allow pop-ups to print', 'error');
+    }
+});
+
+/* ===================== CLEAR ===================== */
+clearBtn.addEventListener('click', () => {
+    uploadedFiles = [];
+    renderFileList();
+    processBtn.disabled = true;
+    previewSection.classList.remove('active');
+    previewIframe.src = 'about:blank';
+    downloadBtn.disabled = true;
+    printBtn.disabled = true;
+    if (processedPdfUrl) {
+        URL.revokeObjectURL(processedPdfUrl);
+        processedPdfUrl = null;
+    }
+    processedPdfBytes = null;
+    totalProcessedPages = 0;
+    fileInput.value = '';
+    showStatus('Cleared', 'info');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+/* ===================== STATUS TOAST ===================== */
+let statusTimer = null;
+function showStatus(msg, type) {
+    if (statusTimer) clearTimeout(statusTimer);
+    status.textContent = msg;
+    status.className = 'status status-' + (type || 'info') + ' show';
+    statusTimer = setTimeout(() => status.classList.remove('show'), 3500);
+}
+
+/* ===================== KEYBOARD SHORTCUTS ===================== */
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p' && processedPdfUrl) {
+        e.preventDefault();
+        printBtn.click();
+    }
+});
+</script>
+</body>
+</html>
