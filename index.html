@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="IBI Invoice & Label Separator — Extract tax invoices or shipping labels separately from Amazon, Flipkart, Meesho, Shopsy and other eCommerce PDFs.">
+<title>IBI Invoice &amp; Label Separator | India Business International</title>
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%23000000'/><text x='50' y='68' font-family='Roboto,Arial,sans-serif' font-size='40' font-weight='900' text-anchor='middle' fill='%2300c5ff'>IBI</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%23000000'/><text x='50' y='68' font-family='Roboto,Arial,sans-serif' font-size='40' font-weight='900' text-anchor='middle' fill='%2300c5ff'>IBI</text></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --primary: #00c5ff;
+  --primary-soft: rgba(0,197,255,.12);
+  --primary-glow: rgba(0,197,255,.35);
+  --bg: #000;
+  --bg-card: #0d0d0d;
+  --bg-elevated: #161616;
+  --bg-input: #1a1a1a;
+  --text: #fff;
+  --text-muted: #a0a0a0;
+  --text-dim: #6a6a6a;
+  --border: #262626;
+  --border-strong: #3a3a3a;
+  --success: #4ade80;
+  --error: #f87171;
+}
+[data-theme="light"] {
+  --bg: #f4f6fa;
+  --bg-card: #fff;
+  --bg-elevated: #f9fafc;
+  --bg-input: #fff;
+  --text: #0a0a0a;
+  --text-muted: #555a66;
+  --text-dim: #9098a3;
+  --border: #e3e7ee;
+  --border-strong: #cdd3dc;
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Roboto',-apple-system,sans-serif;
+  font-size:16px;
+  line-height:1.5;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  transition:background-color .3s,color .3s;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================
+   HEADER  (always #000 bg per IBI spec)
+   ============================================================ */
+header{
+  background:#000;
+  border-bottom:2px solid var(--primary);
+  padding:18px 5%;
+  position:sticky;
+  top:0;
+  z-index:100;
+  box-shadow:0 4px 24px rgba(0,197,255,.10);
+}
+.header-inner{
+  max-width:1300px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.ibi-logo{height:74px;width:auto;max-width:100%;flex-shrink:1;min-width:0}
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+.toggle-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.toggle-lbl{color:var(--primary);font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:1px}
+.theme-toggle{position:relative;display:inline-block;width:56px;height:30px}
+.theme-toggle input{opacity:0;width:0;height:0}
+.theme-toggle .slider{position:absolute;cursor:pointer;inset:0;background:#1a1a1a;border:1.5px solid var(--primary);border-radius:30px;transition:.3s}
+.theme-toggle .slider::before{content:"🌙";position:absolute;height:22px;width:22px;left:2px;top:2px;background:var(--primary);border-radius:50%;transition:.3s;display:flex;align-items:center;justify-content:center;font-size:12px}
+.theme-toggle input:checked+.slider::before{transform:translateX(26px);content:"☀️"}
+
+/* ============================================================
+   MAIN LAYOUT
+   ============================================================ */
+main{max-width:1100px;margin:0 auto;padding:34px 5% 24px}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{text-align:center;margin-bottom:30px}
+h1{
+  font-size:34px;
+  font-weight:900;
+  color:var(--primary);
+  background:#000;
+  display:inline-block;
+  padding:13px 28px;
+  border-radius:10px;
+  margin-bottom:14px;
+  letter-spacing:-.5px;
+  line-height:1.15;
+  box-shadow:0 6px 24px rgba(0,197,255,.15);
+}
+.subtitle{color:var(--text-muted);font-size:16px;max-width:700px;margin:0 auto;line-height:1.65}
+.subtitle strong{color:var(--primary)}
+
+/* ============================================================
+   BANNER
+   ============================================================ */
+.banner{
+  background:var(--primary-soft);
+  border:1px solid var(--primary);
+  color:var(--text);
+  padding:13px 16px;
+  border-radius:10px;
+  margin-bottom:22px;
+  font-size:14px;
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  line-height:1.55;
+}
+.banner svg{color:var(--primary);flex-shrink:0;margin-top:2px}
+
+/* ============================================================
+   CARD
+   ============================================================ */
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:24px;
+  margin-bottom:18px;
+  transition:border-color .3s;
+}
+.card:hover{border-color:var(--border-strong)}
+
+/* Section title: cyan text on #000 bg */
+.sec-title{
+  font-size:17px;
+  font-weight:700;
+  color:var(--primary);
+  background:#000;
+  display:inline-block;
+  padding:7px 17px;
+  border-radius:6px;
+  margin-bottom:18px;
+  letter-spacing:.3px;
+}
+.sub-lbl{
+  color:var(--text-muted);
+  font-size:12px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1.3px;
+  margin-bottom:11px;
+  display:block;
+}
+
+/* ============================================================
+   PLATFORM TABS
+   ============================================================ */
+.platform-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+  gap:9px;
+  margin-bottom:22px;
+}
+.p-tab{
+  padding:13px 10px;
+  background:var(--bg-elevated);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  color:var(--text-muted);
+  font-family:inherit;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-height:48px;
+}
+.p-tab:hover{border-color:var(--primary);color:var(--text);transform:translateY(-1px)}
+.p-tab.active{background:var(--primary);color:#000;border-color:var(--primary);box-shadow:0 4px 16px rgba(0,197,255,.32)}
+.p-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;display:inline-block}
+
+/* ============================================================
+   MODE BUTTONS
+   ============================================================ */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.m-btn{
+  padding:17px 12px;
+  background:var(--bg-elevated);
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  color:var(--text-muted);
+  font-family:inherit;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  text-align:center;
+}
+.m-btn:hover{border-color:var(--primary);color:var(--text);transform:translateY(-1px)}
+.m-btn.active{background:var(--primary);color:#000;border-color:var(--primary);box-shadow:0 4px 16px rgba(0,197,255,.32)}
+.m-btn svg{width:26px;height:26px;stroke-width:2}
+
+/* ============================================================
+   SPLIT DIAGRAM LEGEND
+   ============================================================ */
+.split-legend{
+  margin-top:16px;
+  padding:14px 16px;
+  background:var(--bg-elevated);
+  border:1px solid var(--border);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.split-diagram{
+  flex-shrink:0;
+  width:80px;
+  height:52px;
+}
+.split-info{flex:1;min-width:160px}
+.split-info .split-title{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.split-info .split-desc{font-size:13px;color:var(--text-muted);line-height:1.5}
+
+/* ============================================================
+   DROP ZONE
+   ============================================================ */
+.drop-zone{
+  border:2px dashed var(--border-strong);
+  border-radius:12px;
+  padding:38px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .25s;
+  background:var(--bg-elevated);
+}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--primary);background:var(--primary-soft)}
+.dz-icon{width:50px;height:50px;color:var(--primary);margin:0 auto 11px;display:block}
+.dz-text{font-size:16px;font-weight:500;color:var(--text);margin-bottom:5px}
+.dz-hint{font-size:13px;color:var(--text-muted)}
+.dz-hint strong{color:var(--primary);font-weight:700}
+#fileInput{display:none}
+
+/* ============================================================
+   FILE LIST
+   ============================================================ */
+.file-list{margin-top:18px}
+.file-list:empty{display:none}
+.fl-header{color:var(--primary);font-weight:700;margin-bottom:11px;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+.fl-item{display:flex;align-items:center;gap:11px;padding:11px 14px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;transition:border-color .2s}
+.fl-item:hover{border-color:var(--primary)}
+.fl-icon{color:var(--primary);flex-shrink:0;width:22px;height:22px}
+.fl-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fl-name{font-size:14px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fl-size{font-size:12px;color:var(--text-muted)}
+.fl-rm{background:transparent;border:1px solid var(--border-strong);color:var(--text-muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;font-family:inherit}
+.fl-rm:hover{background:var(--error);color:#fff;border-color:var(--error)}
+
+/* ============================================================
+   SLIDER
+   ============================================================ */
+.slider-row{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:13px;color:var(--text-muted);gap:12px;flex-wrap:wrap}
+.slider-row .lbl{font-weight:500;flex:1;min-width:160px}
+.slider-val{color:var(--primary);font-weight:700;background:var(--primary-soft);padding:4px 11px;border-radius:6px;font-size:14px;min-width:48px;text-align:center;flex-shrink:0}
+input[type="range"]{
+  width:100%;height:6px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:3px;
+  outline:none;
+  -webkit-appearance:none;
+  appearance:none;
+  cursor:pointer;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:22px;height:22px;
+  background:var(--primary);
+  border-radius:50%;
+  cursor:pointer;
+  box-shadow:0 0 0 3px rgba(0,197,255,.18);
+  transition:transform .15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+input[type="range"]::-moz-range-thumb{width:22px;height:22px;background:var(--primary);border-radius:50%;cursor:pointer;border:none}
+.slider-help{
+  font-size:13px;
+  color:var(--text-muted);
+  margin-top:11px;
+  line-height:1.55;
+  padding:11px 13px;
+  background:var(--bg-elevated);
+  border-left:3px solid var(--primary);
+  border-radius:6px;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:13px 26px;
+  border-radius:10px;
+  font-family:'Roboto',sans-serif;
+  font-size:16px;font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  border:1.5px solid transparent;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  letter-spacing:.3px;
+}
+.btn-primary{background:var(--primary);color:#000;box-shadow:0 4px 20px rgba(0,197,255,.28)}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 26px rgba(0,197,255,.45)}
+.btn-primary:active:not(:disabled){transform:translateY(0)}
+.btn-primary:disabled{background:var(--bg-elevated);color:var(--text-dim);cursor:not-allowed;box-shadow:none;border-color:var(--border)}
+.btn-secondary{background:transparent;color:var(--primary);border-color:var(--primary)}
+.btn-secondary:hover:not(:disabled){background:var(--primary);color:#000;transform:translateY(-1px)}
+.btn-secondary:disabled{color:var(--text-dim);border-color:var(--border);cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text-muted);border-color:var(--border-strong)}
+.btn-ghost:hover:not(:disabled){border-color:var(--primary);color:var(--primary)}
+.btn-large{width:100%;padding:17px 30px;font-size:17px}
+.actions-row{display:flex;gap:11px;flex-wrap:wrap;align-items:stretch;justify-content:center}
+.actions-row .btn{flex:1;min-width:130px}
+
+.spinner{display:inline-block;width:16px;height:16px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ============================================================
+   PREVIEW
+   ============================================================ */
+.preview-sec{display:none}
+.preview-sec.active{display:block;animation:slideIn .4s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.prev-meta{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:14px;font-size:13px}
+.m-pill{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-muted);padding:5px 11px;border-radius:18px;display:inline-flex;align-items:center;gap:5px}
+.m-pill strong{color:var(--primary);font-weight:700}
+.prev-iframe{width:100%;height:640px;border:1px solid var(--border);border-radius:10px;background:#fff;margin-bottom:17px;display:block}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast{
+  position:fixed;bottom:22px;left:50%;
+  transform:translate(-50%,100px);
+  padding:13px 20px;
+  border-radius:10px;
+  font-weight:500;font-size:14px;
+  box-shadow:0 6px 24px rgba(0,0,0,.5);
+  opacity:0;transition:all .3s;
+  z-index:1000;max-width:calc(100% - 30px);text-align:center;pointer-events:none;
+}
+.toast.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.toast-ok{background:var(--success);color:#033010}
+.toast-err{background:var(--error);color:#3b0a0a}
+.toast-info{background:var(--primary);color:#001f2e}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{
+  background:#000;color:#a0a0a0;
+  padding:24px 5%;text-align:center;
+  border-top:2px solid var(--primary);
+  font-size:14px;margin-top:30px;
+}
+footer .brand{color:var(--primary);font-weight:700}
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+@media(max-width:768px){
+  header{padding:13px 4%}
+  .ibi-logo{height:52px}
+  .toggle-lbl{display:none}
+  main{padding:24px 4% 14px}
+  h1{font-size:22px;padding:9px 16px}
+  .subtitle{font-size:14px}
+  .card{padding:17px;border-radius:12px}
+  .sec-title{font-size:14px;padding:6px 13px}
+  .platform-grid{grid-template-columns:repeat(2,1fr)}
+  .p-tab{font-size:12px;padding:11px 8px;min-height:44px}
+  .m-btn{padding:13px 10px;font-size:13px}
+  .m-btn svg{width:22px;height:22px}
+  .drop-zone{padding:28px 14px}
+  .dz-icon{width:44px;height:44px}
+  .prev-iframe{height:500px}
+  .actions-row{flex-direction:column}
+  .actions-row .btn{width:100%;min-width:auto}
+  .btn-large{padding:15px 22px;font-size:15px}
+  .split-diagram{display:none}
+}
+@media(max-width:480px){
+  .ibi-logo{height:44px}
+  h1{font-size:19px;padding:8px 13px}
+  .prev-iframe{height:420px}
+  .platform-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ============================================================
+   PRINT
+   ============================================================ */
+@media print{
+  header,footer,.setup-card,.upload-card,.controls-card,.process-row,.actions-row,.toast,.prev-meta,.banner,.hero{display:none!important}
+  body{background:#fff;color:#000}
+  .preview-sec{display:block!important}
+  .card{border:none;padding:0;margin:0;background:#fff}
+  .prev-iframe{height:100vh;border:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header>
+  <div class="header-inner">
+    <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
+      <g fill="#00c5ff">
+        <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
+        <circle cx="60" cy="22" r="6"/><circle cx="60" cy="62" r="9"/><circle cx="60" cy="102" r="9"/><circle cx="60" cy="142" r="9"/><circle cx="60" cy="182" r="6"/>
+        <circle cx="102" cy="22" r="9"/><circle cx="102" cy="62" r="11"/><circle cx="102" cy="102" r="13"/><circle cx="102" cy="142" r="13"/><circle cx="102" cy="182" r="11"/>
+        <circle cx="148" cy="22" r="13"/><circle cx="148" cy="62" r="14"/><circle cx="148" cy="102" r="15"/><circle cx="148" cy="142" r="16"/><circle cx="148" cy="182" r="16"/>
+        <circle cx="200" cy="22" r="15"/><circle cx="200" cy="62" r="16"/><circle cx="200" cy="102" r="17"/><circle cx="200" cy="142" r="17"/><circle cx="200" cy="182" r="17"/>
+      </g>
+      <line x1="240" y1="14" x2="240" y2="200" stroke="#00c5ff" stroke-width="2.5"/>
+      <g font-family="Roboto,Arial,sans-serif" fill="#00c5ff">
+        <text x="262" y="50" font-size="32" font-weight="900">INDIA</text>
+        <text x="262" y="98" font-size="32" font-weight="900">BUSINESS</text>
+        <text x="262" y="146" font-size="32" font-weight="900">INTERNATIONAL</text>
+        <text x="262" y="180" font-size="14" font-weight="300" letter-spacing="0.5">eCommerce for the World</text>
+      </g>
+    </svg>
+    <div class="toggle-wrap">
+      <span class="toggle-lbl" id="themeLabel">DARK</span>
+      <label class="theme-toggle" aria-label="Toggle theme">
+        <input type="checkbox" id="themeToggle"><span class="slider"></span>
+      </label>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MAIN ============ -->
+<main>
+
+  <section class="hero">
+    <h1>IBI INVOICE &amp; LABEL SEPARATOR</h1>
+    <p class="subtitle">Extract <strong>tax invoices</strong> or <strong>shipping labels</strong> separately from Amazon, Flipkart, Meesho, Shopsy and other eCommerce platform PDFs — platform-aware cropping, one click download, print-ready output.</p>
+  </section>
+
+  <div class="banner">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,7H13V9H11V7M11,11H13V17H11V11Z"/></svg>
+    <div><strong style="color:var(--primary)">100% private —</strong> all PDF processing happens entirely in your browser. No file ever leaves your device.</div>
+  </div>
+
+  <!-- ===== STEP 1+2: SETUP CARD ===== -->
+  <div class="card setup-card">
+    <div class="sec-title">SETUP</div>
+
+    <span class="sub-lbl">Step 1 — Select eCommerce Platform</span>
+    <div class="platform-grid" id="platformGrid">
+      <button class="p-tab active" data-p="flipkart"><span class="p-dot" style="background:#2874f0"></span>Flipkart</button>
+      <button class="p-tab" data-p="amazon"><span class="p-dot" style="background:#ff9900"></span>Amazon</button>
+      <button class="p-tab" data-p="meesho"><span class="p-dot" style="background:#f43397"></span>Meesho</button>
+      <button class="p-tab" data-p="shopsy"><span class="p-dot" style="background:#ffd700"></span>Shopsy</button>
+      <button class="p-tab" data-p="custom"><span class="p-dot" style="background:#888"></span>Custom</button>
+    </div>
+
+    <span class="sub-lbl">Step 2 — What to Extract?</span>
+    <div class="mode-grid" id="modeGrid">
+      <button class="m-btn active" data-m="invoice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/>
+        </svg>
+        Tax Invoice
+      </button>
+      <button class="m-btn" data-m="label">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+        Shipping Label
+      </button>
+    </div>
+
+    <!-- Visual split legend (updates dynamically) -->
+    <div class="split-legend" id="splitLegend">
+      <svg class="split-diagram" id="splitDiagram" viewBox="0 0 80 52"></svg>
+      <div class="split-info">
+        <div class="split-title" id="splitTitle"></div>
+        <div class="split-desc" id="splitDesc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== UPLOAD ===== -->
+  <div class="card upload-card">
+    <div class="sec-title">UPLOAD PDF FILES</div>
+    <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Click or drop PDF files here">
+      <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <div class="dz-text">Drop PDF files here or click to browse</div>
+      <div class="dz-hint">Supports <strong>multi-page</strong> and <strong>multi-file</strong> uploads</div>
+      <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple>
+    </div>
+    <div class="file-list" id="fileList" aria-live="polite"></div>
+  </div>
+
+  <!-- ===== CROP CONTROLS ===== -->
+  <div class="card controls-card">
+    <div class="sec-title">CROP SETTINGS</div>
+    <div>
+      <div class="slider-row">
+        <span class="lbl" id="sliderLbl">Invoice Height (bottom % of page)</span>
+        <span class="slider-val" id="cropVal">55%</span>
+      </div>
+      <input type="range" id="cropSlider" min="20" max="80" step="1" value="55" aria-label="Crop percentage">
+      <div class="slider-help" id="sliderHelp"></div>
+    </div>
+  </div>
+
+  <!-- ===== PROCESS BUTTON ===== -->
+  <div class="process-row" style="margin-bottom:20px">
+    <button class="btn btn-primary btn-large" id="processBtn" disabled>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      <span id="btnLabel">EXTRACT INVOICES</span>
+    </button>
+  </div>
+
+  <!-- ===== PREVIEW ===== -->
+  <div class="card preview-sec" id="previewSec">
+    <div class="sec-title" id="previewTitle">EXTRACTED INVOICES</div>
+    <div class="prev-meta" id="prevMeta"></div>
+    <iframe class="prev-iframe" id="prevFrame" title="Extracted Output Preview"></iframe>
+    <div class="actions-row">
+      <button class="btn btn-primary" id="dlBtn" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        DOWNLOAD PDF
+      </button>
+      <button class="btn btn-secondary" id="printBtn" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        PRINT
+      </button>
+      <button class="btn btn-ghost" id="clearBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>
+        </svg>
+        CLEAR ALL
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div>Built for <span class="brand">India Business International</span> &middot; <span style="color:#00c5ff">eCommerce for the World</span></div>
+  <div style="margin-top:5px;font-size:12px;opacity:.7">All processing happens locally in your browser &middot; No data leaves your device</div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* ================================================================
+   PLATFORM CONFIGURATION TABLE
+   ----------------------------------------------------------------
+   split     : 'h' = horizontal page split (top/bottom)
+               'v' = vertical page split (left/right)
+
+   For horizontal:
+     invoice lives on the 'bottom', label on the 'top'
+   For vertical:
+     invoice lives on the 'right', label on the 'left'
+
+   splitInvoice : where to cut for INVOICE extraction
+                  (% of page from bottom for h-split, % from left for v-split)
+                  Invoice = the portion BELOW (h) or to the RIGHT (v) of this line.
+
+   splitLabel   : where to cut for LABEL extraction
+                  (same units as splitInvoice)
+                  Label = the portion ABOVE (h) or to the LEFT (v) of this line.
+
+   Invoice and label may share a narrow overlap zone (the separator row /
+   dashed line) so that both get a clean visual border on that edge.
+   ================================================================ */
+const CFG = {
+  flipkart: {
+    name:'Flipkart', split:'h',
+    splitInvoice: 55,   // invoice = bottom 55 % — dashed line is the TOP border of the invoice
+    splitLabel:   55,   // label   = top 45 % — ends at "Not for resale"; dashed line falls just below the boundary (not visible in label)
+    helpInvoice:'Bottom <strong>55%</strong> — dashed separator line is the top border → "Tax Invoice" header → Sold By / Billing / Shipping → item table → Authorized Signature.',
+    helpLabel:'Top <strong>45%</strong> — page top → E-Kart barcode → AWB → customer address → SKU table → "Not for resale" line. Dashed line falls just below the boundary and is not visible. Decrease by 1 % if label content is clipped at the bottom; increase if invoice text appears.',
+    note:'Flipkart: both splits at 55 % — complementary. Dashed line appears as top border of invoice, not visible in label.'
+  },
+  amazon: {
+    name:'Amazon', split:'v',
+    splitInvoice: 50,   // invoice = right 50 %
+    splitLabel:   50,   // label   = left 50 %
+    helpInvoice:'Right <strong>50%</strong> — Tax Invoice / Bill of Supply / Cash Memo.',
+    helpLabel:'Left <strong>50%</strong> — AWB barcode, weight, sort-zone codes, shipping address, Customer Self Declaration.',
+    note:'Amazon: vertical split at 50 % from left. Label = left 50 %, Invoice = right 50 %.'
+  },
+  meesho: {
+    name:'Meesho', split:'h',
+    splitInvoice: 56,   // invoice = bottom 56 % — "TAX INVOICE | Original For Recipient" is the topmost invoice element
+    splitLabel:   57,   // label   = top 43 % — ends at Product Details / SKU content; "TAX INVOICE" row falls just below boundary (not visible in label)
+    helpInvoice:'Bottom <strong>56%</strong> — <em>"TAX INVOICE | Original For Recipient"</em> header is the first visible element → Bill To/Ship To → Sold By → GSTIN → item table → totals → footer. Increase by 1 % if TAX INVOICE header disappears; decrease if SKU product text bleeds in at top.',
+    helpLabel:'Top <strong>43%</strong> — customer address → Delhivery/barcode → Product Details → SKU product name as last visible line. "TAX INVOICE" row falls just below the crop boundary. Decrease by 1 % if SKU content is clipped; increase if TAX INVOICE row appears at bottom.',
+    note:'Meesho: invoice bottom 56 % (TAX INVOICE as top border), label top 43 % (ends at SKU content). Gap zone contains the TAX INVOICE separator — belongs to invoice only.'
+  },
+  shopsy: {
+    name:'Shopsy', split:'h',
+    splitInvoice: 55,   // same as Flipkart — confirmed correct; dashed line as top border
+    splitLabel:   55,   // same as Flipkart — ends at "Not for resale"; dashed line just at or below boundary
+    helpInvoice:'Bottom <strong>55%</strong> — identical to Flipkart format. Dashed line as top border → Tax Invoice header → item table → Authorized Signature.',
+    helpLabel:'Top <strong>45%</strong> — identical to Flipkart format. E-Kart barcode → AWB → customer address → SKU table → "Not for resale" line. Decrease by 1 % if content is clipped; increase if invoice text appears.',
+    note:'Shopsy: both splits at 55 % — same as Flipkart. Dashed line as top border of invoice, ends just outside label.'
+  },
+  custom: {
+    name:'Custom / Other', split:'h',
+    splitInvoice: 50,
+    splitLabel:   50,
+    helpInvoice:'Bottom <strong>50%</strong> (default). Increase if invoice top content is clipped; decrease if label content bleeds through.',
+    helpLabel:'Top <strong>50%</strong> (default). Decrease if label bottom content is clipped; increase if invoice content bleeds through.',
+    note:'Custom: horizontal split. Both invoice and label default to 50 %. Adjust each independently.'
+  }
+};
+
+/* ================================================================
+   STATE
+   ================================================================ */
+let files   = [];
+let outUrl  = null;
+let outBytes= null;
+let curP    = 'flipkart';
+let curM    = 'invoice';   // 'invoice' | 'label'
+let crops   = {};          // { flipkart:55, meesho:55, amazon:50, ... } — one split point per platform
+
+/* ================================================================
+   ELEMENTS
+   ================================================================ */
+const $= id => document.getElementById(id);
+const dropZone=$('dropZone'), fileInput=$('fileInput'), fileList=$('fileList');
+const processBtn=$('processBtn'), btnLabel=$('btnLabel');
+const cropSlider=$('cropSlider'), cropVal=$('cropVal');
+const sliderLbl=$('sliderLbl'), sliderHelp=$('sliderHelp');
+const prevSec=$('previewSec'), prevFrame=$('prevFrame'), prevMeta=$('prevMeta'), prevTitle=$('previewTitle');
+const dlBtn=$('dlBtn'), printBtn=$('printBtn'), clearBtn=$('clearBtn');
+const themeToggle=$('themeToggle'), themeLabel=$('themeLabel');
+const toast=$('toast');
+const splitDiagram=$('splitDiagram'), splitTitle=$('splitTitle'), splitDesc=$('splitDesc');
+
+/* ================================================================
+   STORAGE HELPERS
+   ================================================================ */
+const ls = {
+  get:(k,d)=>{ try{const v=localStorage.getItem(k);return v===null?d:v}catch{return d} },
+  set:(k,v)=>{ try{localStorage.setItem(k,v)}catch{} },
+  getJ:(k,d)=>{ try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch{return d} },
+  setJ:(k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v))}catch{} }
+};
+
+/* ================================================================
+   THEME
+   ================================================================ */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  themeToggle.checked=t==='light';
+  themeLabel.textContent=t==='light'?'LIGHT':'DARK';
+  ls.set('ibi-theme',t);
+}
+applyTheme(ls.get('ibi-theme','dark'));
+themeToggle.addEventListener('change',()=>applyTheme(themeToggle.checked?'light':'dark'));
+
+/* ================================================================
+   PLATFORM + MODE LOGIC
+   ================================================================ */
+
+// Returns the stored or default split value for the current platform+mode
+function getActiveCrop(){
+  const key = curP + '-' + curM;   // e.g. 'meesho-invoice', 'shopsy-label'
+  if(crops[key] !== undefined) return crops[key];
+  return curM === 'invoice' ? CFG[curP].splitInvoice : CFG[curP].splitLabel;
+}
+
+function renderSplitDiagram(){
+  const cfg=CFG[curP];
+  const pct=getActiveCrop();
+  const isV=cfg.split==='v';
+  const isInv=curM==='invoice';
+  let svgInner='';
+  if(!isV){
+    // For diagram, show the current mode's split line position
+    const invH=Math.round(48*pct/100);   // size of invoice area (or split line position for label)
+    const lblH=48-invH;
+    const splitY=2+lblH;
+    if(isInv){
+      // Cyan = invoice (bottom portion)
+      svgInner=`<rect x="2" y="${splitY}" width="76" height="${invH}" rx="2" fill="#00c5ff" opacity=".9"/>
+                <rect x="2" y="2" width="76" height="${lblH}" rx="2" fill="#333"/>
+                <line x1="2" y1="${splitY}" x2="78" y2="${splitY}" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+    } else {
+      // Cyan = label (top portion, size = 100-pct)
+      const lblHpx=Math.round(48*(100-pct)/100);
+      const invHpx=48-lblHpx;
+      const sy=2+lblHpx;
+      svgInner=`<rect x="2" y="2" width="76" height="${lblHpx}" rx="2" fill="#00c5ff" opacity=".9"/>
+                <rect x="2" y="${sy}" width="76" height="${invHpx}" rx="2" fill="#333"/>
+                <line x1="2" y1="${sy}" x2="78" y2="${sy}" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+    }
+  } else {
+    const lblW=Math.round(72*pct/100);
+    const invW=72-lblW;
+    const splitX=2+lblW;
+    if(isInv){
+      // Invoice = right (100-pct)%
+      const iW=Math.round(72*(100-pct)/100);
+      const lW=72-iW;
+      const sx=2+lW;
+      svgInner=`<rect x="${sx}" y="2" width="${iW}" height="48" rx="2" fill="#00c5ff" opacity=".9"/>
+                <rect x="2" y="2" width="${lW}" height="48" rx="2" fill="#333"/>
+                <line x1="${sx}" y1="2" x2="${sx}" y2="50" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+    } else {
+      // Label = left pct%
+      svgInner=`<rect x="2" y="2" width="${lblW}" height="48" rx="2" fill="#00c5ff" opacity=".9"/>
+                <rect x="${splitX}" y="2" width="${invW}" height="48" rx="2" fill="#333"/>
+                <line x1="${splitX}" y1="2" x2="${splitX}" y2="50" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+    }
+  }
+  splitDiagram.innerHTML=svgInner;
+}
+
+function updateUI(){
+  const cfg=CFG[curP];
+  const isV=cfg.split==='v';
+  const isInv=curM==='invoice';
+  const pct=getActiveCrop();
+  const defPct=isInv?cfg.splitInvoice:cfg.splitLabel;
+
+  // Slider label — shows mode-specific split info
+  if(isV){
+    sliderLbl.textContent=isInv
+      ? `Invoice split — ${pct}% from left (Invoice: right ${100-pct}%)`
+      : `Label split — ${pct}% from left (Label: left ${pct}%)`;
+  } else {
+    sliderLbl.textContent=isInv
+      ? `Invoice split — ${pct}% from bottom (Invoice: bottom ${pct}%, Label top: ${100-pct}%)`
+      : `Label split — ${pct}% from bottom (Label: top ${100-pct}%, Invoice bottom: ${pct}%)`;
+  }
+
+  cropSlider.value=pct;
+  cropVal.textContent=pct+'%';
+
+  // Help text
+  const help=isInv?cfg.helpInvoice:cfg.helpLabel;
+  sliderHelp.innerHTML=`<strong style="color:var(--primary)">${cfg.name} default: ${defPct}%</strong> &mdash; ${help}&nbsp; <em>Invoice and label have independent split values. Slider is remembered per platform &amp; per mode.</em>`;
+
+  // Split legend
+  if(isV){
+    splitTitle.textContent=isInv
+      ? `Vertical — right ${100-pct}% extracted as Invoice`
+      : `Vertical — left ${pct}% extracted as Label`;
+  } else {
+    splitTitle.textContent=isInv
+      ? `Horizontal — bottom ${pct}% extracted as Invoice`
+      : `Horizontal — top ${100-pct}% extracted as Label`;
+  }
+  splitDesc.textContent=cfg.note;
+
+  btnLabel.textContent=isInv?'EXTRACT INVOICES':'EXTRACT SHIPPING LABELS';
+  prevTitle.textContent=isInv?'EXTRACTED INVOICES':'EXTRACTED SHIPPING LABELS';
+
+  renderSplitDiagram();
+}
+
+function setPlatform(p){
+  if(!CFG[p]) return;
+  curP=p;
+  ls.set('ibi-platform',p);
+  document.querySelectorAll('.p-tab').forEach(b=>b.classList.toggle('active',b.dataset.p===p));
+  updateUI();
+}
+function setMode(m){
+  if(m!=='invoice'&&m!=='label') return;
+  curM=m;
+  ls.set('ibi-mode',m);
+  document.querySelectorAll('.m-btn').forEach(b=>b.classList.toggle('active',b.dataset.m===m));
+  updateUI();
+}
+
+$('platformGrid').addEventListener('click',e=>{
+  const b=e.target.closest('.p-tab');
+  if(b) setPlatform(b.dataset.p);
+});
+$('modeGrid').addEventListener('click',e=>{
+  const b=e.target.closest('.m-btn');
+  if(b) setMode(b.dataset.m);
+});
+
+// Init from localStorage
+// v4 uses per-platform + per-mode keys ('meesho-invoice', 'shopsy-label', …)
+// Clear any stale keys from v1/v2/v3.
+const CROPS_VER = '6';
+if(ls.get('ibi-crops-ver','') !== CROPS_VER){
+  ls.set('ibi-crops-ver', CROPS_VER);
+  ls.setJ('ibi-crops', {});
+}
+crops = ls.getJ('ibi-crops',{});
+const sp = ls.get('ibi-platform','flipkart');
+const sm = ls.get('ibi-mode','invoice');
+setPlatform(CFG[sp]?sp:'flipkart');
+setMode(sm==='label'?'label':'invoice');
+
+/* ================================================================
+   CROP SLIDER EVENTS
+   ================================================================ */
+cropSlider.addEventListener('input',()=>{
+  const key=curP+'-'+curM;
+  crops[key]=parseInt(cropSlider.value,10);
+  cropVal.textContent=cropSlider.value+'%';
+  updateUI();
+});
+cropSlider.addEventListener('change',()=>{
+  crops[curP+'-'+curM]=parseInt(cropSlider.value,10);
+  ls.setJ('ibi-crops',crops);
+});
+
+/* ================================================================
+   FILE UPLOAD
+   ================================================================ */
+dropZone.addEventListener('click',()=>fileInput.click());
+dropZone.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fileInput.click()}});
+
+['dragenter','dragover'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add('drag-over')}));
+['dragleave','drop'].forEach(ev=>dropZone.addEventListener(ev,e=>{
+  e.preventDefault();e.stopPropagation();
+  if(ev==='dragleave'&&e.target!==dropZone) return;
+  dropZone.classList.remove('drag-over');
+}));
+dropZone.addEventListener('drop',e=>{if(e.dataTransfer?.files) addFiles(e.dataTransfer.files)});
+fileInput.addEventListener('change',e=>{addFiles(e.target.files);fileInput.value=''});
+
+function addFiles(raw){
+  const arr=Array.from(raw);
+  const pdfs=arr.filter(f=>f.type==='application/pdf'||/\.pdf$/i.test(f.name));
+  const skip=arr.length-pdfs.length;
+  if(!pdfs.length){showToast('Please select PDF files only','err');return}
+  pdfs.forEach(f=>{
+    if(!files.some(x=>x.name===f.name&&x.size===f.size)) files.push(f);
+  });
+  renderFiles();
+  processBtn.disabled=!files.length;
+  showToast(pdfs.length+' file'+(pdfs.length>1?'s':'')+' added'+(skip?` · ${skip} non-PDF skipped`:''),'ok');
+}
+
+function renderFiles(){
+  if(!files.length){fileList.innerHTML='';return}
+  let h=`<div class="fl-header">Uploaded Files (${files.length})</div>`;
+  files.forEach((f,i)=>{
+    h+=`<div class="fl-item">
+      <svg class="fl-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+      <div class="fl-info">
+        <span class="fl-name" title="${esc(f.name)}">${esc(f.name)}</span>
+        <span class="fl-size">${fmtSize(f.size)}</span>
+      </div>
+      <button class="fl-rm" data-i="${i}" aria-label="Remove" title="Remove">×</button>
+    </div>`;
+  });
+  fileList.innerHTML=h;
+  fileList.querySelectorAll('.fl-rm').forEach(b=>b.addEventListener('click',e=>{
+    files.splice(parseInt(e.currentTarget.dataset.i,10),1);
+    renderFiles();
+    processBtn.disabled=!files.length;
+  }));
+}
+
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB'}
+
+/* ================================================================
+   CROP ENGINE
+   ----------------------------------------------------------------
+   splitPct = the split line position for the CURRENT mode:
+     • Invoice mode: CFG[platform].splitInvoice (or user override)
+     • Label mode:   CFG[platform].splitLabel   (or user override)
+
+   Horizontal (h) — split line is at splitPct% from page bottom:
+     Invoice → bottom splitPct%   box: (0,      0,   W,              H·r)
+     Label   → top (100-splitPct)% box: (0,      H·r, W,              H·(1−r))
+
+   Vertical (v) — split line is at splitPct% from page left:
+     Label   → left  splitPct%    box: (0,      0,   W·r,            H)
+     Invoice → right (100-splitPct)% box: (W·r,   0,   W·(1−r),        H)
+
+   Invoice and label may share a small overlap zone (e.g. the dashed
+   separator line) intentionally, so each gets a clean visual border.
+   ================================================================ */
+function applyCrop(page, splitPct){
+  const {width:W, height:H} = page.getSize();
+  const r = splitPct / 100;
+  const cfg = CFG[curP];
+  let x,y,w,h;
+
+  if(cfg.split==='h'){
+    if(curM==='invoice'){
+      // INVOICE → bottom r% of page
+      x=0;   y=0;     w=W;       h=H*r;
+    } else {
+      // LABEL → top (1−r)% of page, starting at the split line y=H·r
+      x=0;   y=H*r;   w=W;       h=H*(1-r);
+    }
+  } else {
+    if(curM==='invoice'){
+      // INVOICE → right (1−r)% of page, starting at split line x=W·r
+      x=W*r; y=0;     w=W*(1-r); h=H;
+    } else {
+      // LABEL → left r% of page
+      x=0;   y=0;     w=W*r;     h=H;
+    }
+  }
+
+  page.setMediaBox(x, y, w, h);
+  page.setCropBox(x, y, w, h);
+  page.setTrimBox(x, y, w, h);
+  page.setBleedBox(x, y, w, h);
+}
+
+/* ================================================================
+   PROCESS
+   ================================================================ */
+processBtn.addEventListener('click', async ()=>{
+  if(!files.length) return;
+  if(typeof PDFLib==='undefined'){
+    showToast('PDF library failed to load — check your connection','err'); return;
+  }
+  processBtn.disabled=true;
+  const origLabel=btnLabel.textContent;
+  btnLabel.innerHTML='<span class="spinner"></span>&nbsp;PROCESSING…';
+
+  try{
+    const pct=parseInt(cropSlider.value,10);
+    const out=await PDFLib.PDFDocument.create();
+    let pages=0, done=0;
+
+    for(const f of files){
+      const buf=await f.arrayBuffer();
+      let src;
+      try{ src=await PDFLib.PDFDocument.load(buf,{ignoreEncryption:true}); }
+      catch(e){ console.warn('Skip:',f.name,e); continue; }
+      const copied=await out.copyPages(src, src.getPageIndices());
+      copied.forEach(pg=>{ applyCrop(pg,pct); out.addPage(pg); pages++; });
+      done++;
+    }
+
+    if(!pages) throw new Error('No readable pages found in the uploaded PDFs.');
+
+    const pName=CFG[curP].name;
+    const mName=curM==='invoice'?'Invoices':'Shipping Labels';
+    out.setTitle(`IBI ${pName} ${mName}`);
+    out.setAuthor('India Business International');
+    out.setProducer('IBI Invoice & Label Separator');
+    out.setCreationDate(new Date());
+
+    outBytes=await out.save();
+    if(outUrl) URL.revokeObjectURL(outUrl);
+    outUrl=URL.createObjectURL(new Blob([outBytes],{type:'application/pdf'}));
+
+    prevFrame.src=outUrl;
+    const noun=curM==='invoice'?(pages===1?'invoice':'invoices'):(pages===1?'shipping label':'shipping labels');
+    prevMeta.innerHTML=`
+      <span class="m-pill"><strong>${pages}</strong> ${noun}</span>
+      <span class="m-pill">From <strong>${done}</strong> file${done>1?'s':''}</span>
+      <span class="m-pill">Platform: <strong>${pName}</strong></span>
+      <span class="m-pill"><strong>${fmtSize(outBytes.length)}</strong> output</span>
+      <span class="m-pill">Crop: <strong>${pct}%</strong></span>`;
+
+    prevSec.classList.add('active');
+    dlBtn.disabled=false;
+    printBtn.disabled=false;
+    showToast(`✓ Extracted ${pages} ${noun} from ${done} ${pName} file${done>1?'s':''}`, 'ok');
+    setTimeout(()=>prevSec.scrollIntoView({behavior:'smooth',block:'start'}),220);
+
+  } catch(err){
+    console.error(err);
+    showToast('Error: '+(err.message||'Could not process PDFs'),'err');
+  } finally {
+    processBtn.disabled=false;
+    btnLabel.textContent=origLabel;
+  }
+});
+
+/* ================================================================
+   DOWNLOAD
+   ================================================================ */
+dlBtn.addEventListener('click',()=>{
+  if(!outUrl) return;
+  const d=new Date().toISOString().slice(0,10);
+  const a=document.createElement('a');
+  a.href=outUrl;
+  a.download=`IBI_${CFG[curP].name}_${curM==='invoice'?'Invoices':'Labels'}_${d}.pdf`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  showToast('Download started','info');
+});
+
+/* ================================================================
+   PRINT
+   ================================================================ */
+printBtn.addEventListener('click',()=>{
+  if(!outUrl) return;
+  try{
+    const win=prevFrame.contentWindow;
+    if(win){win.focus();win.print();return}
+  } catch(e){console.warn('iframe print fallback:',e)}
+  const w=window.open(outUrl,'_blank');
+  if(w){
+    const go=()=>{try{w.focus();w.print()}catch(e){}};
+    w.document?.readyState==='complete'?go():w.addEventListener('load',go);
+  } else showToast('Allow pop-ups to print','err');
+});
+
+/* ================================================================
+   CLEAR
+   ================================================================ */
+clearBtn.addEventListener('click',()=>{
+  files=[];
+  renderFiles();
+  processBtn.disabled=true;
+  prevSec.classList.remove('active');
+  prevFrame.src='about:blank';
+  dlBtn.disabled=true;
+  printBtn.disabled=true;
+  if(outUrl){URL.revokeObjectURL(outUrl);outUrl=null}
+  outBytes=null;
+  fileInput.value='';
+  showToast('Cleared','info');
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ================================================================
+   TOAST
+   ================================================================ */
+let _tTimer=null;
+function showToast(msg,type){
+  if(_tTimer) clearTimeout(_tTimer);
+  toast.textContent=msg;
+  toast.className='toast toast-'+(type==='ok'?'ok':type==='err'?'err':'info')+' show';
+  _tTimer=setTimeout(()=>toast.classList.remove('show'),3500);
+}
+
+/* ================================================================
+   KEYBOARD SHORTCUT  Ctrl/Cmd+P → print
+   ================================================================ */
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='p'&&outUrl){
+    e.preventDefault();printBtn.click();
+  }
+});
+</script>
+</body>
+</html>
