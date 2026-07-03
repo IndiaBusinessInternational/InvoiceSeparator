@@ -605,7 +605,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <header>
   <div class="header-inner">
     <div class="header-left">
-      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.1</span>
+      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.2</span>
       <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
         <g fill="#00c5ff">
           <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
@@ -645,7 +645,7 @@ footer .brand{color:var(--primary);font-weight:700}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Check for Updates
           </button>
-          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.1</strong><br>India Business International</div>
+          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.2</strong><br>India Business International</div>
         </div>
       </div>
     </div>
@@ -789,7 +789,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <footer>
   <div>Built for <span class="brand">India Business International</span> &middot; <span style="color:#00c5ff">eCommerce for the World</span></div>
   <div style="margin-top:7px">
-    <span class="ver-badge" style="font-size:11px">v3.1</span>
+    <span class="ver-badge" style="font-size:11px">v3.2</span>
     &nbsp;&middot;&nbsp; All processing happens locally in your browser &middot; No data leaves your device
   </div>
 </footer>
@@ -816,7 +816,7 @@ footer .brand{color:var(--primary);font-weight:700}
    VERSION — bump on every update (minor: v3.1, major: v4)
    Also bump CACHE name in sw.js to match.
    ================================================================ */
-const APP_VERSION = 'v3.1';
+const APP_VERSION = 'v3.2';
 
 /* ================================================================
    PLATFORM CONFIGURATION TABLE
@@ -849,9 +849,9 @@ const CFG = {
   amazon: {
     name:'Amazon', split:'v',
     vSplit: 50,         // fixed vertical boundary — invoice lives right of this line
-    splitInvoice: 70,   // invoice mode slider = HEIGHT: keep top 70 % of the right half (blank bottom removed)
+    splitInvoice: 50,   // invoice mode slider = HEIGHT: keep top 50 % of the right half (blank bottom removed)
     splitLabel:   50,   // label mode slider = WIDTH: label = left 50 %
-    helpInvoice:'Right <strong>50%</strong> of the page, keeping only the top <strong>70%</strong> — Tax Invoice / Bill of Supply / Cash Memo; the blank bottom area is removed automatically. Increase the slider if invoice content is clipped at the bottom; decrease it if too much blank space remains.',
+    helpInvoice:'Right <strong>50%</strong> of the page, keeping only the top <strong>50%</strong> — Tax Invoice / Bill of Supply / Cash Memo; the blank bottom area is removed automatically. Increase the slider if invoice content is clipped at the bottom; decrease it if too much blank space remains.',
     helpLabel:'Left <strong>50%</strong> — AWB barcode, weight, sort-zone codes, shipping address, Customer Self Declaration.',
     note:'Amazon: vertical split at 50 %. Label = left 50 % (full height). Invoice = right 50 % with the blank bottom trimmed off (slider sets the kept height).'
   },
@@ -1150,8 +1150,8 @@ $('modeGrid').addEventListener('click',e=>{
 });
 
 // Init from localStorage
-// v9: new defaults — Flipkart label 54, Meesho 58/59, Amazon invoice = height 70
-const CROPS_VER = '9';
+// v10: Amazon invoice height default 50 (both Amazon modes default 50)
+const CROPS_VER = '10';
 
 // Display version in header badge, footer badge and menu
 document.querySelectorAll('.ver-badge').forEach(el => el.textContent = APP_VERSION);
