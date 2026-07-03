@@ -605,7 +605,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <header>
   <div class="header-inner">
     <div class="header-left">
-      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3</span>
+      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.1</span>
       <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
         <g fill="#00c5ff">
           <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
@@ -645,7 +645,7 @@ footer .brand{color:var(--primary);font-weight:700}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Check for Updates
           </button>
-          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3</strong><br>India Business International</div>
+          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.1</strong><br>India Business International</div>
         </div>
       </div>
     </div>
@@ -789,7 +789,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <footer>
   <div>Built for <span class="brand">India Business International</span> &middot; <span style="color:#00c5ff">eCommerce for the World</span></div>
   <div style="margin-top:7px">
-    <span class="ver-badge" style="font-size:11px">v3</span>
+    <span class="ver-badge" style="font-size:11px">v3.1</span>
     &nbsp;&middot;&nbsp; All processing happens locally in your browser &middot; No data leaves your device
   </div>
 </footer>
@@ -816,7 +816,7 @@ footer .brand{color:var(--primary);font-weight:700}
    VERSION — bump on every update (minor: v3.1, major: v4)
    Also bump CACHE name in sw.js to match.
    ================================================================ */
-const APP_VERSION = 'v3';
+const APP_VERSION = 'v3.1';
 
 /* ================================================================
    PLATFORM CONFIGURATION TABLE
@@ -841,26 +841,27 @@ const CFG = {
   flipkart: {
     name:'Flipkart', split:'h',
     splitInvoice: 55,   // invoice = bottom 55 % — dashed line is the TOP border of the invoice
-    splitLabel:   55,   // label   = top 45 % — ends at "Not for resale"
+    splitLabel:   54,   // label   = top 46 %
     helpInvoice:'Bottom <strong>55%</strong> — dashed separator line is the top border → "Tax Invoice" header → Sold By / Billing / Shipping → item table → Authorized Signature.',
-    helpLabel:'Top <strong>45%</strong> — page top → E-Kart barcode → AWB → customer address → SKU table → "Not for resale" line. Dashed line falls just below the boundary and is not visible. Decrease by 1 % if label content is clipped at the bottom; increase if invoice text appears.',
-    note:'Flipkart: both splits at 55 % — complementary. Dashed line appears as top border of invoice, not visible in label.'
+    helpLabel:'Top <strong>46%</strong> — page top → E-Kart barcode → AWB → customer address → SKU table → "Not for resale" line. Decrease by 1 % if label content is clipped at the bottom; increase if invoice text appears.',
+    note:'Flipkart: label split 54 %, invoice split 55 %. Dashed line appears as top border of invoice, not visible in label.'
   },
   amazon: {
     name:'Amazon', split:'v',
-    splitInvoice: 50,   // invoice = right 50 %
-    splitLabel:   50,   // label   = left 50 %
-    helpInvoice:'Right <strong>50%</strong> — Tax Invoice / Bill of Supply / Cash Memo.',
+    vSplit: 50,         // fixed vertical boundary — invoice lives right of this line
+    splitInvoice: 70,   // invoice mode slider = HEIGHT: keep top 70 % of the right half (blank bottom removed)
+    splitLabel:   50,   // label mode slider = WIDTH: label = left 50 %
+    helpInvoice:'Right <strong>50%</strong> of the page, keeping only the top <strong>70%</strong> — Tax Invoice / Bill of Supply / Cash Memo; the blank bottom area is removed automatically. Increase the slider if invoice content is clipped at the bottom; decrease it if too much blank space remains.',
     helpLabel:'Left <strong>50%</strong> — AWB barcode, weight, sort-zone codes, shipping address, Customer Self Declaration.',
-    note:'Amazon: vertical split at 50 % from left. Label = left 50 %, Invoice = right 50 %.'
+    note:'Amazon: vertical split at 50 %. Label = left 50 % (full height). Invoice = right 50 % with the blank bottom trimmed off (slider sets the kept height).'
   },
   meesho: {
     name:'Meesho', split:'h',
-    splitInvoice: 56,   // invoice = bottom 56 % — "TAX INVOICE" is the topmost invoice element
-    splitLabel:   57,   // label   = top 43 % — ends at Product Details / SKU content
-    helpInvoice:'Bottom <strong>56%</strong> — <em>"TAX INVOICE | Original For Recipient"</em> header is the first visible element → Bill To/Ship To → Sold By → GSTIN → item table → totals → footer. Increase by 1 % if TAX INVOICE header disappears; decrease if SKU product text bleeds in at top.',
-    helpLabel:'Top <strong>43%</strong> — customer address → Delhivery/barcode → Product Details → SKU product name as last visible line. "TAX INVOICE" row falls just below the crop boundary. Decrease by 1 % if SKU content is clipped; increase if TAX INVOICE row appears at bottom.',
-    note:'Meesho: invoice bottom 56 % (TAX INVOICE as top border), label top 43 % (ends at SKU content). Gap zone contains the TAX INVOICE separator — belongs to invoice only.'
+    splitInvoice: 59,   // invoice = bottom 59 % — "TAX INVOICE" is the topmost invoice element
+    splitLabel:   58,   // label   = top 42 % — ends at Product Details / SKU content
+    helpInvoice:'Bottom <strong>59%</strong> — <em>"TAX INVOICE | Original For Recipient"</em> header is the first visible element → Bill To/Ship To → Sold By → GSTIN → item table → totals → footer. Increase by 1 % if TAX INVOICE header disappears; decrease if SKU product text bleeds in at top.',
+    helpLabel:'Top <strong>42%</strong> — customer address → Delhivery/barcode → Product Details → SKU product name as last visible line. "TAX INVOICE" row falls just below the crop boundary. Decrease by 1 % if SKU content is clipped; increase if TAX INVOICE row appears at bottom.',
+    note:'Meesho: invoice slider 59 % (bottom 59 % kept), label slider 58 % (top 42 % kept). Gap zone contains the TAX INVOICE separator — belongs to invoice only.'
   },
   shopsy: {
     name:'Shopsy', split:'h',
@@ -1048,12 +1049,17 @@ function renderSplitDiagram(){
     const invW=72-lblW;
     const splitX=2+lblW;
     if(isInv){
-      const iW=Math.round(72*(100-pct)/100);
-      const lW=72-iW;
+      // right of vSplit, top pct% kept — bottom blank discarded
+      const vs=cfg.vSplit!==undefined?cfg.vSplit:50;
+      const lW=Math.round(72*vs/100);
+      const iW=72-lW;
       const sx=2+lW;
-      svgInner=`<rect x="${sx}" y="2" width="${iW}" height="48" rx="2" fill="#00c5ff" opacity=".9"/>
-                <rect x="2" y="2" width="${lW}" height="48" rx="2" fill="#333"/>
-                <line x1="${sx}" y1="2" x2="${sx}" y2="50" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+      const keptH=Math.round(48*pct/100);
+      svgInner=`<rect x="2" y="2" width="${lW}" height="48" rx="2" fill="#333"/>
+                <rect x="${sx}" y="2" width="${iW}" height="${keptH}" rx="2" fill="#00c5ff" opacity=".9"/>
+                <rect x="${sx}" y="${2+keptH}" width="${iW}" height="${48-keptH}" rx="2" fill="#1e1e1e"/>
+                <line x1="${sx}" y1="2" x2="${sx}" y2="50" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <line x1="${sx}" y1="${2+keptH}" x2="74" y2="${2+keptH}" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
     } else {
       svgInner=`<rect x="2" y="2" width="${lblW}" height="48" rx="2" fill="#00c5ff" opacity=".9"/>
                 <rect x="${splitX}" y="2" width="${invW}" height="48" rx="2" fill="#333"/>
@@ -1082,7 +1088,7 @@ function updateUI(){
 
     if(isV){
       sliderLbl.textContent=isInv
-        ? `Invoice split — ${pct}% from left (Invoice: right ${100-pct}%)`
+        ? `Invoice height — top ${pct}% of the right half kept (blank bottom removed)`
         : `Label split — ${pct}% from left (Label: left ${pct}%)`;
     } else {
       sliderLbl.textContent=isInv
@@ -1090,6 +1096,9 @@ function updateUI(){
         : `Label split — ${pct}% from bottom (Label: top ${100-pct}%, Invoice bottom: ${pct}%)`;
     }
 
+    // Amazon invoice height can go up to 100 % (full height)
+    if(isV&&isInv){ cropSlider.min=30; cropSlider.max=100; }
+    else { cropSlider.min=20; cropSlider.max=80; }
     cropSlider.value=pct;
     cropVal.textContent=pct+'%';
 
@@ -1097,8 +1106,9 @@ function updateUI(){
     sliderHelp.innerHTML=`<strong style="color:var(--primary)">${cfg.name} default: ${defPct}%</strong> &mdash; ${help}&nbsp; <em>Invoice and label have independent split values. Slider is remembered per platform &amp; per mode.</em>`;
 
     if(isV){
+      const vs=cfg.vSplit!==undefined?cfg.vSplit:50;
       splitTitle.textContent=isInv
-        ? `Vertical — right ${100-pct}% extracted as Invoice`
+        ? `Vertical — right ${100-vs}% × top ${pct}% extracted as Invoice (blank removed)`
         : `Vertical — left ${pct}% extracted as Label`;
     } else {
       splitTitle.textContent=isInv
@@ -1140,7 +1150,8 @@ $('modeGrid').addEventListener('click',e=>{
 });
 
 // Init from localStorage
-const CROPS_VER = '8';
+// v9: new defaults — Flipkart label 54, Meesho 58/59, Amazon invoice = height 70
+const CROPS_VER = '9';
 
 // Display version in header badge, footer badge and menu
 document.querySelectorAll('.ver-badge').forEach(el => el.textContent = APP_VERSION);
@@ -1247,6 +1258,12 @@ function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed
 /* ================================================================
    CROP ENGINE  (h / v platforms only — 'pages' platforms copy
    whole pages and never call this)
+
+   Vertical ('v') platforms:
+     Label mode   → slider = WIDTH  : keep left r% (full height)
+     Invoice mode → slider = HEIGHT : keep top r% of the right
+                    portion (right of cfg.vSplit) — removes the
+                    blank bottom area (Amazon).
    ================================================================ */
 function applyCrop(page, splitPct){
   const {width:W, height:H} = page.getSize();
@@ -1262,7 +1279,9 @@ function applyCrop(page, splitPct){
     }
   } else {
     if(curM==='invoice'){
-      x=W*r; y=0;     w=W*(1-r); h=H;
+      // right of vSplit, top r% only (blank bottom removed)
+      const vx=(cfg.vSplit!==undefined?cfg.vSplit:50)/100;
+      x=W*vx; y=H*(1-r); w=W*(1-vx); h=H*r;
     } else {
       x=0;   y=0;     w=W*r;     h=H;
     }
