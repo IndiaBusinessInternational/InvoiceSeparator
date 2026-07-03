@@ -4,11 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
 <meta name="theme-color" content="#000000">
-<meta name="description" content="IBI Invoice & Label Separator — Extract tax invoices or shipping labels separately from Amazon, Flipkart, Meesho, Shopsy and other eCommerce PDFs.">
-<title>IBI Invoice &amp; Label Separator | India Business International</title>
+<meta name="description" content="IBI Invoice & Shipping Label Separator — Extract tax invoices or shipping labels separately from Amazon, Flipkart, Meesho, Shopsy and ShopClues eCommerce PDFs.">
+<title>IBI Invoice &amp; Shipping Label Separator | India Business International</title>
 
+<!-- ===== Open Graph ===== -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="India Business International">
+<meta property="og:url" content="https://invoice.indiabusinessinternational.online/">
+<meta property="og:title" content="IBI Invoice & Shipping Label Separator">
+<meta property="og:description" content="Extract tax invoices & shipping labels separately from Amazon, Flipkart, Meesho, Shopsy & ShopClues PDFs — 100% private, processed entirely in your browser.">
+<meta property="og:image" content="https://invoice.indiabusinessinternational.online/og-banner.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="IBI Invoice & Shipping Label Separator — eCommerce for the World">
+
+<!-- ===== Twitter Card ===== -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="IBI Invoice & Shipping Label Separator">
+<meta name="twitter:description" content="Extract tax invoices & shipping labels separately from Amazon, Flipkart, Meesho, Shopsy & ShopClues PDFs — 100% private, processed entirely in your browser.">
+<meta name="twitter:image" content="https://invoice.indiabusinessinternational.online/og-banner.png">
+
+<!-- ===== PWA ===== -->
+<link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%23000000'/><text x='50' y='68' font-family='Roboto,Arial,sans-serif' font-size='40' font-weight='900' text-anchor='middle' fill='%2300c5ff'>IBI</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%23000000'/><text x='50' y='68' font-family='Roboto,Arial,sans-serif' font-size='40' font-weight='900' text-anchor='middle' fill='%2300c5ff'>IBI</text></svg>">
+<link rel="apple-touch-icon" href="icon-192.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,7 +88,7 @@ body{
 header{
   background:#000;
   border-bottom:2px solid var(--primary);
-  padding:18px 5%;
+  padding:14px 5% 8px;
   position:sticky;
   top:0;
   z-index:100;
@@ -84,10 +103,26 @@ header{
   gap:14px;
   flex-wrap:wrap;
 }
-.ibi-logo{height:74px;width:auto;max-width:100%;flex-shrink:1;min-width:0}
+.header-left{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+.ibi-logo{height:70px;width:auto;max-width:100%;flex-shrink:1;min-width:0}
 
 /* ============================================================
-   THEME TOGGLE
+   DATE-TIME BAR
+   ============================================================ */
+.dt-bar{
+  max-width:1300px;
+  margin:6px auto 0;
+  text-align:center;
+  color:var(--primary);
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:.6px;
+  opacity:.92;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ============================================================
+   THEME TOGGLE + HEADER CONTROLS
    ============================================================ */
 .toggle-wrap{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .toggle-lbl{color:var(--primary);font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:1px}
@@ -96,6 +131,90 @@ header{
 .theme-toggle .slider{position:absolute;cursor:pointer;inset:0;background:#1a1a1a;border:1.5px solid var(--primary);border-radius:30px;transition:.3s}
 .theme-toggle .slider::before{content:"🌙";position:absolute;height:22px;width:22px;left:2px;top:2px;background:var(--primary);border-radius:50%;transition:.3s;display:flex;align-items:center;justify-content:center;font-size:12px}
 .theme-toggle input:checked+.slider::before{transform:translateX(26px);content:"☀️"}
+
+.install-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--primary);color:#000;
+  border:none;border-radius:8px;
+  padding:9px 15px;
+  font-family:'Roboto',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:.6px;cursor:pointer;
+  box-shadow:0 3px 14px rgba(0,197,255,.35);
+  transition:transform .2s,box-shadow .2s;
+  text-transform:uppercase;
+}
+.install-btn:hover{transform:translateY(-1px);box-shadow:0 5px 20px rgba(0,197,255,.5)}
+.install-btn[hidden]{display:none}
+
+.menu-wrap{position:relative}
+.menu-btn{
+  background:transparent;border:1.5px solid var(--primary);color:var(--primary);
+  width:38px;height:38px;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
+.menu-btn:hover{background:var(--primary-soft)}
+.menu-drop{
+  position:absolute;right:0;top:46px;
+  background:var(--bg-card);
+  border:1px solid var(--border-strong);
+  border-radius:12px;
+  min-width:250px;
+  box-shadow:0 12px 38px rgba(0,0,0,.5);
+  display:none;z-index:300;overflow:hidden;
+}
+.menu-drop.open{display:block;animation:slideIn .18s ease}
+.menu-item{
+  display:flex;gap:10px;align-items:center;width:100%;
+  padding:13px 16px;background:none;border:none;
+  color:var(--text);font-family:'Roboto',sans-serif;font-size:14px;font-weight:500;
+  cursor:pointer;text-align:left;transition:background .15s;
+}
+.menu-item:hover{background:var(--primary-soft);color:var(--primary)}
+.menu-item svg{flex-shrink:0;color:var(--primary)}
+.menu-note{
+  padding:11px 16px;font-size:12px;color:var(--text-muted);
+  border-top:1px solid var(--border);line-height:1.5;
+}
+.menu-note strong{color:var(--primary)}
+
+/* ============================================================
+   PWA INSTALL BANNER
+   ============================================================ */
+.pwa-banner{
+  position:fixed;left:50%;bottom:18px;
+  transform:translateX(-50%) translateY(160%);
+  width:min(470px,calc(100% - 24px));
+  background:var(--bg-card);
+  border:1.5px solid var(--primary);
+  border-radius:14px;
+  padding:15px 16px;
+  display:flex;gap:13px;align-items:center;
+  z-index:900;
+  box-shadow:0 12px 40px rgba(0,197,255,.25);
+  transition:transform .35s ease;
+}
+.pwa-banner.show{transform:translateX(-50%) translateY(0)}
+.pwa-ic{
+  width:46px;height:46px;border-radius:10px;flex:none;
+  background:#000;color:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:16px;border:1px solid var(--primary);
+  font-family:'Roboto',sans-serif;
+}
+.pwa-txt{flex:1;min-width:0}
+.pwa-txt .pt1{font-size:14px;font-weight:700;color:var(--text)}
+.pwa-txt .pt2{font-size:12px;color:var(--text-muted);margin-top:2px}
+.pwa-actions{display:flex;flex-direction:column;gap:7px;flex-shrink:0}
+.pwa-install{
+  background:var(--primary);color:#000;border:none;border-radius:8px;
+  padding:8px 16px;font-family:'Roboto',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
+}
+.pwa-later{
+  background:none;border:none;color:var(--text-muted);
+  font-family:'Roboto',sans-serif;font-size:12px;cursor:pointer;padding:3px;
+}
+.pwa-later:hover{color:var(--text)}
 
 /* ============================================================
    MAIN LAYOUT
@@ -107,7 +226,7 @@ main{max-width:1100px;margin:0 auto;padding:34px 5% 24px}
    ============================================================ */
 .hero{text-align:center;margin-bottom:30px}
 h1{
-  font-size:34px;
+  font-size:32px;
   font-weight:900;
   color:var(--primary);
   background:#000;
@@ -430,16 +549,22 @@ footer{
 footer .brand{color:var(--primary);font-weight:700}
 
 /* ============================================================
-   MOBILE
+   MOBILE  (edge-to-edge, no side gutters)
    ============================================================ */
 @media(max-width:768px){
-  header{padding:13px 4%}
-  .ibi-logo{height:52px}
+  header{padding:10px 3% 6px}
+  .header-left{gap:9px}
+  .ibi-logo{height:48px}
   .toggle-lbl{display:none}
-  main{padding:24px 4% 14px}
-  h1{font-size:22px;padding:9px 16px}
+  .install-btn{padding:8px 11px;font-size:12px}
+  .dt-bar{font-size:12px;margin-top:4px}
+  main{padding:18px 0 8px}
+  .hero{padding:0 12px;margin-bottom:22px}
+  h1{font-size:21px;padding:9px 16px}
   .subtitle{font-size:14px}
-  .card{padding:17px;border-radius:12px}
+  .banner{border-radius:0;border-left:none;border-right:none;margin-bottom:16px}
+  .card{padding:16px 12px;border-radius:0;border-left:none;border-right:none;margin-bottom:14px}
+  .process-row{padding:0 12px}
   .sec-title{font-size:14px;padding:6px 13px}
   .platform-grid{grid-template-columns:repeat(2,1fr)}
   .p-tab{font-size:12px;padding:11px 8px;min-height:44px}
@@ -447,15 +572,17 @@ footer .brand{color:var(--primary);font-weight:700}
   .m-btn svg{width:22px;height:22px}
   .drop-zone{padding:28px 14px}
   .dz-icon{width:44px;height:44px}
-  .prev-iframe{height:500px}
+  .prev-iframe{height:500px;border-radius:0;border-left:none;border-right:none}
   .actions-row{flex-direction:column}
   .actions-row .btn{width:100%;min-width:auto}
   .btn-large{padding:15px 22px;font-size:15px}
   .split-diagram{display:none}
+  .menu-drop{right:-6px}
 }
 @media(max-width:480px){
-  .ibi-logo{height:44px}
-  h1{font-size:19px;padding:8px 13px}
+  .ibi-logo{height:42px}
+  .ver-badge{font-size:11px;padding:3px 9px}
+  h1{font-size:18px;padding:8px 13px}
   .prev-iframe{height:420px}
   .platform-grid{grid-template-columns:repeat(2,1fr)}
 }
@@ -464,7 +591,7 @@ footer .brand{color:var(--primary);font-weight:700}
    PRINT
    ============================================================ */
 @media print{
-  header,footer,.setup-card,.upload-card,.controls-card,.process-row,.actions-row,.toast,.prev-meta,.banner,.hero{display:none!important}
+  header,footer,.setup-card,.upload-card,.controls-card,.process-row,.actions-row,.toast,.prev-meta,.banner,.hero,.pwa-banner{display:none!important}
   body{background:#fff;color:#000}
   .preview-sec{display:block!important}
   .card{border:none;padding:0;margin:0;background:#fff}
@@ -477,43 +604,66 @@ footer .brand{color:var(--primary);font-weight:700}
 <!-- ============ HEADER ============ -->
 <header>
   <div class="header-inner">
-    <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
-      <g fill="#00c5ff">
-        <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
-        <circle cx="60" cy="22" r="6"/><circle cx="60" cy="62" r="9"/><circle cx="60" cy="102" r="9"/><circle cx="60" cy="142" r="9"/><circle cx="60" cy="182" r="6"/>
-        <circle cx="102" cy="22" r="9"/><circle cx="102" cy="62" r="11"/><circle cx="102" cy="102" r="13"/><circle cx="102" cy="142" r="13"/><circle cx="102" cy="182" r="11"/>
-        <circle cx="148" cy="22" r="13"/><circle cx="148" cy="62" r="14"/><circle cx="148" cy="102" r="15"/><circle cx="148" cy="142" r="16"/><circle cx="148" cy="182" r="16"/>
-        <circle cx="200" cy="22" r="15"/><circle cx="200" cy="62" r="16"/><circle cx="200" cy="102" r="17"/><circle cx="200" cy="142" r="17"/><circle cx="200" cy="182" r="17"/>
-      </g>
-      <line x1="240" y1="14" x2="240" y2="200" stroke="#00c5ff" stroke-width="2.5"/>
-      <g font-family="Roboto,Arial,sans-serif" fill="#00c5ff">
-        <text x="262" y="50" font-size="32" font-weight="900">INDIA</text>
-        <text x="262" y="98" font-size="32" font-weight="900">BUSINESS</text>
-        <text x="262" y="146" font-size="32" font-weight="900">INTERNATIONAL</text>
-        <text x="262" y="180" font-size="14" font-weight="300" letter-spacing="0.5">eCommerce for the World</text>
-      </g>
-    </svg>
+    <div class="header-left">
+      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3</span>
+      <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
+        <g fill="#00c5ff">
+          <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
+          <circle cx="60" cy="22" r="6"/><circle cx="60" cy="62" r="9"/><circle cx="60" cy="102" r="9"/><circle cx="60" cy="142" r="9"/><circle cx="60" cy="182" r="6"/>
+          <circle cx="102" cy="22" r="9"/><circle cx="102" cy="62" r="11"/><circle cx="102" cy="102" r="13"/><circle cx="102" cy="142" r="13"/><circle cx="102" cy="182" r="11"/>
+          <circle cx="148" cy="22" r="13"/><circle cx="148" cy="62" r="14"/><circle cx="148" cy="102" r="15"/><circle cx="148" cy="142" r="16"/><circle cx="148" cy="182" r="16"/>
+          <circle cx="200" cy="22" r="15"/><circle cx="200" cy="62" r="16"/><circle cx="200" cy="102" r="17"/><circle cx="200" cy="142" r="17"/><circle cx="200" cy="182" r="17"/>
+        </g>
+        <line x1="240" y1="14" x2="240" y2="200" stroke="#00c5ff" stroke-width="2.5"/>
+        <g font-family="Roboto,Arial,sans-serif" fill="#00c5ff">
+          <text x="262" y="50" font-size="32" font-weight="900">INDIA</text>
+          <text x="262" y="98" font-size="32" font-weight="900">BUSINESS</text>
+          <text x="262" y="146" font-size="32" font-weight="900">INTERNATIONAL</text>
+          <text x="262" y="180" font-size="14" font-weight="300" letter-spacing="0.5">eCommerce for the World</text>
+        </g>
+      </svg>
+    </div>
     <div class="toggle-wrap">
-      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Label Separator version">v2.8</span>
+      <button class="install-btn" id="installBtn" hidden>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Install
+      </button>
       <span class="toggle-lbl" id="themeLabel">DARK</span>
       <label class="theme-toggle" aria-label="Toggle theme">
         <input type="checkbox" id="themeToggle"><span class="slider"></span>
       </label>
+      <div class="menu-wrap">
+        <button class="menu-btn" id="menuBtn" aria-label="Settings menu" aria-expanded="false">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+        <div class="menu-drop" id="menuDrop">
+          <button class="menu-item" id="miInstall">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Install App
+          </button>
+          <button class="menu-item" id="miUpdate">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Check for Updates
+          </button>
+          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3</strong><br>India Business International</div>
+        </div>
+      </div>
     </div>
   </div>
+  <div class="dt-bar" id="dtBar" aria-hidden="true"></div>
 </header>
 
 <!-- ============ MAIN ============ -->
 <main>
 
   <section class="hero">
-    <h1>IBI INVOICE &amp; LABEL SEPARATOR</h1>
-    <p class="subtitle">Extract <strong>tax invoices</strong> or <strong>shipping labels</strong> separately from Amazon, Flipkart, Meesho, Shopsy and other eCommerce platform PDFs — platform-aware cropping, one click download, print-ready output.</p>
+    <h1>IBI INVOICE &amp; SHIPPING LABEL SEPARATOR</h1>
+    <p class="subtitle">Extract <strong>tax invoices</strong> or <strong>shipping labels</strong> separately from Amazon, Flipkart, Meesho, Shopsy and ShopClues eCommerce PDFs — platform-aware separation, one click download, print-ready output.</p>
   </section>
 
   <div class="banner">
     <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,7H13V9H11V7M11,11H13V17H11V11Z"/></svg>
-    <div><strong style="color:var(--primary)">100% private —</strong> all PDF processing happens entirely in your browser. No file ever leaves your device.</div>
+    <div><strong style="color:var(--primary)">100% private —</strong> all PDF processing happens entirely in your browser. No file ever leaves your device. Uploaded files are remembered on this device until you press Clear All.</div>
   </div>
 
   <!-- ===== STEP 1+2: SETUP CARD ===== -->
@@ -570,14 +720,14 @@ footer .brand{color:var(--primary);font-weight:700}
         <line x1="12" y1="3" x2="12" y2="15"/>
       </svg>
       <div class="dz-text">Drop PDF files here or click to browse</div>
-      <div class="dz-hint">Supports <strong>multi-page</strong> and <strong>multi-file</strong> uploads</div>
+      <div class="dz-hint">Supports <strong>multi-page</strong> and <strong>multi-file</strong> uploads &middot; files persist on this device until Clear All</div>
       <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple>
     </div>
     <div class="file-list" id="fileList" aria-live="polite"></div>
   </div>
 
   <!-- ===== CROP CONTROLS ===== -->
-  <div class="card controls-card">
+  <div class="card controls-card" id="controlsCard">
     <div class="sec-title">CROP SETTINGS</div>
     <div>
       <div class="slider-row">
@@ -639,10 +789,23 @@ footer .brand{color:var(--primary);font-weight:700}
 <footer>
   <div>Built for <span class="brand">India Business International</span> &middot; <span style="color:#00c5ff">eCommerce for the World</span></div>
   <div style="margin-top:7px">
-    <span class="ver-badge" style="font-size:11px">v2.8</span>
+    <span class="ver-badge" style="font-size:11px">v3</span>
     &nbsp;&middot;&nbsp; All processing happens locally in your browser &middot; No data leaves your device
   </div>
 </footer>
+
+<!-- ============ PWA INSTALL BANNER ============ -->
+<div class="pwa-banner" id="pwaBanner" role="dialog" aria-label="Install app">
+  <div class="pwa-ic">IBI</div>
+  <div class="pwa-txt">
+    <div class="pt1">Install IBI Separator</div>
+    <div class="pt2">Add to your home screen / desktop for one-tap access &amp; offline use.</div>
+  </div>
+  <div class="pwa-actions">
+    <button class="pwa-install" id="pwaInstallBtn">Install</button>
+    <button class="pwa-later" id="pwaLaterBtn">Not now</button>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -650,10 +813,20 @@ footer .brand{color:var(--primary);font-weight:700}
 'use strict';
 
 /* ================================================================
+   VERSION — bump on every update (minor: v3.1, major: v4)
+   Also bump CACHE name in sw.js to match.
+   ================================================================ */
+const APP_VERSION = 'v3';
+
+/* ================================================================
    PLATFORM CONFIGURATION TABLE
    ----------------------------------------------------------------
-   split     : 'h' = horizontal page split (top/bottom)
-               'v' = vertical page split (left/right)
+   split     : 'h'     = horizontal page split (top/bottom crop)
+               'v'     = vertical page split (left/right crop)
+               'pages' = page-based split (whole pages, no crop)
+                         Each order = 2 pages: page 1 = shipping label,
+                         page 2 = invoice. Extraction picks odd pages
+                         (label) or even pages (invoice).
 
    For horizontal:
      invoice lives on the 'bottom', label on the 'top'
@@ -662,20 +835,13 @@ footer .brand{color:var(--primary);font-weight:700}
 
    splitInvoice : where to cut for INVOICE extraction
                   (% of page from bottom for h-split, % from left for v-split)
-                  Invoice = the portion BELOW (h) or to the RIGHT (v) of this line.
-
    splitLabel   : where to cut for LABEL extraction
-                  (same units as splitInvoice)
-                  Label = the portion ABOVE (h) or to the LEFT (v) of this line.
-
-   Invoice and label may share a narrow overlap zone (the separator row /
-   dashed line) so that both get a clean visual border on that edge.
    ================================================================ */
 const CFG = {
   flipkart: {
     name:'Flipkart', split:'h',
     splitInvoice: 55,   // invoice = bottom 55 % — dashed line is the TOP border of the invoice
-    splitLabel:   55,   // label   = top 45 % — ends at "Not for resale"; dashed line falls just below the boundary (not visible in label)
+    splitLabel:   55,   // label   = top 45 % — ends at "Not for resale"
     helpInvoice:'Bottom <strong>55%</strong> — dashed separator line is the top border → "Tax Invoice" header → Sold By / Billing / Shipping → item table → Authorized Signature.',
     helpLabel:'Top <strong>45%</strong> — page top → E-Kart barcode → AWB → customer address → SKU table → "Not for resale" line. Dashed line falls just below the boundary and is not visible. Decrease by 1 % if label content is clipped at the bottom; increase if invoice text appears.',
     note:'Flipkart: both splits at 55 % — complementary. Dashed line appears as top border of invoice, not visible in label.'
@@ -690,27 +856,25 @@ const CFG = {
   },
   meesho: {
     name:'Meesho', split:'h',
-    splitInvoice: 56,   // invoice = bottom 56 % — "TAX INVOICE | Original For Recipient" is the topmost invoice element
-    splitLabel:   57,   // label   = top 43 % — ends at Product Details / SKU content; "TAX INVOICE" row falls just below boundary (not visible in label)
+    splitInvoice: 56,   // invoice = bottom 56 % — "TAX INVOICE" is the topmost invoice element
+    splitLabel:   57,   // label   = top 43 % — ends at Product Details / SKU content
     helpInvoice:'Bottom <strong>56%</strong> — <em>"TAX INVOICE | Original For Recipient"</em> header is the first visible element → Bill To/Ship To → Sold By → GSTIN → item table → totals → footer. Increase by 1 % if TAX INVOICE header disappears; decrease if SKU product text bleeds in at top.',
     helpLabel:'Top <strong>43%</strong> — customer address → Delhivery/barcode → Product Details → SKU product name as last visible line. "TAX INVOICE" row falls just below the crop boundary. Decrease by 1 % if SKU content is clipped; increase if TAX INVOICE row appears at bottom.',
     note:'Meesho: invoice bottom 56 % (TAX INVOICE as top border), label top 43 % (ends at SKU content). Gap zone contains the TAX INVOICE separator — belongs to invoice only.'
   },
   shopsy: {
     name:'Shopsy', split:'h',
-    splitInvoice: 55,   // same as Flipkart — confirmed correct; dashed line as top border
-    splitLabel:   55,   // same as Flipkart — ends at "Not for resale"; dashed line just at or below boundary
+    splitInvoice: 55,   // same as Flipkart
+    splitLabel:   55,
     helpInvoice:'Bottom <strong>55%</strong> — identical to Flipkart format. Dashed line as top border → Tax Invoice header → item table → Authorized Signature.',
     helpLabel:'Top <strong>45%</strong> — identical to Flipkart format. E-Kart barcode → AWB → customer address → SKU table → "Not for resale" line. Decrease by 1 % if content is clipped; increase if invoice text appears.',
     note:'Shopsy: both splits at 55 % — same as Flipkart. Dashed line as top border of invoice, ends just outside label.'
   },
   shopclues: {
-    name:'ShopClues', split:'h',
-    splitInvoice: 49,   // invoice (packing slip) = bottom 49 % — from "Fold-1" line downward
-    splitLabel:   49,   // label = top 51 % — from page top to the "Fold-1" fold line
-    helpInvoice:'Bottom <strong>49%</strong> — from the <em>"Fold-1"</em> fold line downward: product name → quantity / unit price / subtotal → QR code → ShopClues footer. Increase by 1–2 % if the "Fold-1" line is missing at the top; decrease if label content bleeds in.',
-    helpLabel:'Top <strong>51%</strong> — from page top to the "Fold-1" fold line: IBI seller header → GSTIN → billing info → AWB barcode → Delhivery details → customer Ship To address → COD amount → product ID → Return To address. Decrease by 1–2 % if any label content is clipped; increase if packing-slip content appears at bottom.',
-    note:'ShopClues: split at the "Fold-1" horizontal fold line. Label = top 51 %, Invoice/Packing Slip = bottom 49 %. Adjust slider ±1–2 % if the fold line shifts between orders.'
+    name:'ShopClues', split:'pages',
+    helpInvoice:'New ShopClues format: each order is <strong>2 full pages</strong>. <strong>Page 2</strong> = complete Tax Invoice — Sold By / Billing Address → PAYMENT &amp; DATE → product table → Subtotal / Total Cost → ShopClues footer. Whole pages are extracted — no cropping needed.',
+    helpLabel:'New ShopClues format: each order is <strong>2 full pages</strong>. <strong>Page 1</strong> = complete Shipping Label — AWB barcode → Delhivery / weight / payment → destination → Ship Address → order total → Return To address. Whole pages are extracted — no cropping needed.',
+    note:'ShopClues (new 2026 format): each order = 2 full pages. Page 1 = Shipping Label, Page 2 = Tax Invoice. Whole pages are extracted — the crop slider is not required and is hidden.'
   },
   custom: {
     name:'Custom / Other', split:'h',
@@ -730,7 +894,7 @@ let outUrl  = null;
 let outBytes= null;
 let curP    = 'flipkart';
 let curM    = 'invoice';   // 'invoice' | 'label'
-let crops   = {};          // { flipkart:55, meesho:55, amazon:50, ... } — one split point per platform
+let crops   = {};          // per platform+mode overrides
 
 /* ================================================================
    ELEMENTS
@@ -740,14 +904,18 @@ const dropZone=$('dropZone'), fileInput=$('fileInput'), fileList=$('fileList');
 const processBtn=$('processBtn'), btnLabel=$('btnLabel');
 const cropSlider=$('cropSlider'), cropVal=$('cropVal');
 const sliderLbl=$('sliderLbl'), sliderHelp=$('sliderHelp');
+const controlsCard=$('controlsCard');
 const prevSec=$('previewSec'), prevFrame=$('prevFrame'), prevMeta=$('prevMeta'), prevTitle=$('previewTitle');
 const dlBtn=$('dlBtn'), printBtn=$('printBtn'), clearBtn=$('clearBtn');
 const themeToggle=$('themeToggle'), themeLabel=$('themeLabel');
 const toast=$('toast');
 const splitDiagram=$('splitDiagram'), splitTitle=$('splitTitle'), splitDesc=$('splitDesc');
+const dtBar=$('dtBar');
+const installBtn=$('installBtn'), pwaBanner=$('pwaBanner');
+const menuBtn=$('menuBtn'), menuDrop=$('menuDrop');
 
 /* ================================================================
-   STORAGE HELPERS
+   STORAGE HELPERS (localStorage)
    ================================================================ */
 const ls = {
   get:(k,d)=>{ try{const v=localStorage.getItem(k);return v===null?d:v}catch{return d} },
@@ -755,6 +923,64 @@ const ls = {
   getJ:(k,d)=>{ try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch{return d} },
   setJ:(k,v)=>{ try{localStorage.setItem(k,JSON.stringify(v))}catch{} }
 };
+
+/* ================================================================
+   INDEXEDDB — persist uploaded PDFs across refreshes.
+   Cleared ONLY via the Clear All button (or per-file remove ×).
+   ================================================================ */
+const IDB_NAME='ibi-invsep', IDB_STORE='files';
+let _idb=null;
+function idbOpen(){
+  if(_idb) return Promise.resolve(_idb);
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(IDB_NAME,1);
+    r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains(IDB_STORE)) r.result.createObjectStore(IDB_STORE,{keyPath:'key'}); };
+    r.onsuccess=()=>{_idb=r.result;res(_idb)};
+    r.onerror=()=>rej(r.error);
+  });
+}
+function idbTx(mode,fn){
+  return idbOpen().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,mode);
+    const st=tx.objectStore(IDB_STORE);
+    const out=fn(st);
+    tx.oncomplete=()=>res(out&&out.result!==undefined?out.result:undefined);
+    tx.onerror=()=>rej(tx.error);
+  }));
+}
+const fileKey=f=>f.name+'|'+f.size;
+async function idbSaveFile(f){
+  try{
+    const data=await f.arrayBuffer();
+    await idbTx('readwrite',st=>st.put({key:fileKey(f),name:f.name,size:f.size,data,ts:Date.now()}));
+  }catch(e){console.warn('Persist failed:',e)}
+}
+function idbDeleteFile(key){ return idbTx('readwrite',st=>st.delete(key)).catch(()=>{}) }
+function idbClearFiles(){ return idbTx('readwrite',st=>st.clear()).catch(()=>{}) }
+function idbAllFiles(){
+  return idbOpen().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction(IDB_STORE,'readonly');
+    const rq=tx.objectStore(IDB_STORE).getAll();
+    rq.onsuccess=()=>res(rq.result||[]);
+    rq.onerror=()=>rej(rq.error);
+  }));
+}
+
+/* ================================================================
+   DATE & TIME  — "28 May 2026, Thursday, 01:38:00 PM"
+   ================================================================ */
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+function fmtDateTime(d){
+  const p=n=>String(n).padStart(2,'0');
+  let h=d.getHours();
+  const ampm=h>=12?'PM':'AM';
+  h=h%12||12;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}, ${DAYS[d.getDay()]}, ${p(h)}:${p(d.getMinutes())}:${p(d.getSeconds())} ${ampm}`;
+}
+function tickClock(){ dtBar.textContent=fmtDateTime(new Date()); }
+tickClock();
+setInterval(tickClock,1000);
 
 /* ================================================================
    THEME
@@ -774,29 +1000,42 @@ themeToggle.addEventListener('change',()=>applyTheme(themeToggle.checked?'light'
 
 // Returns the stored or default split value for the current platform+mode
 function getActiveCrop(){
-  const key = curP + '-' + curM;   // e.g. 'meesho-invoice', 'shopsy-label'
+  const cfg=CFG[curP];
+  if(cfg.split==='pages') return 0; // not used in page mode
+  const key = curP + '-' + curM;
   if(crops[key] !== undefined) return crops[key];
-  return curM === 'invoice' ? CFG[curP].splitInvoice : CFG[curP].splitLabel;
+  return curM === 'invoice' ? cfg.splitInvoice : cfg.splitLabel;
 }
 
 function renderSplitDiagram(){
   const cfg=CFG[curP];
-  const pct=getActiveCrop();
-  const isV=cfg.split==='v';
   const isInv=curM==='invoice';
   let svgInner='';
+
+  if(cfg.split==='pages'){
+    // Two mini pages side by side; highlighted one = extracted
+    const c1=isInv?'#333':'#00c5ff', c2=isInv?'#00c5ff':'#333';
+    const t1=isInv?'#888':'#000',   t2=isInv?'#000':'#888';
+    svgInner=`
+      <rect x="6"  y="3" width="30" height="46" rx="2.5" fill="${c1}"/>
+      <rect x="44" y="3" width="30" height="46" rx="2.5" fill="${c2}"/>
+      <text x="21" y="31" font-size="15" font-weight="900" font-family="Roboto,sans-serif" text-anchor="middle" fill="${t1}">1</text>
+      <text x="59" y="31" font-size="15" font-weight="900" font-family="Roboto,sans-serif" text-anchor="middle" fill="${t2}">2</text>`;
+    splitDiagram.innerHTML=svgInner;
+    return;
+  }
+
+  const pct=getActiveCrop();
+  const isV=cfg.split==='v';
   if(!isV){
-    // For diagram, show the current mode's split line position
-    const invH=Math.round(48*pct/100);   // size of invoice area (or split line position for label)
+    const invH=Math.round(48*pct/100);
     const lblH=48-invH;
     const splitY=2+lblH;
     if(isInv){
-      // Cyan = invoice (bottom portion)
       svgInner=`<rect x="2" y="${splitY}" width="76" height="${invH}" rx="2" fill="#00c5ff" opacity=".9"/>
                 <rect x="2" y="2" width="76" height="${lblH}" rx="2" fill="#333"/>
                 <line x1="2" y1="${splitY}" x2="78" y2="${splitY}" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
     } else {
-      // Cyan = label (top portion, size = 100-pct)
       const lblHpx=Math.round(48*(100-pct)/100);
       const invHpx=48-lblHpx;
       const sy=2+lblHpx;
@@ -809,7 +1048,6 @@ function renderSplitDiagram(){
     const invW=72-lblW;
     const splitX=2+lblW;
     if(isInv){
-      // Invoice = right (100-pct)%
       const iW=Math.round(72*(100-pct)/100);
       const lW=72-iW;
       const sx=2+lW;
@@ -817,7 +1055,6 @@ function renderSplitDiagram(){
                 <rect x="2" y="2" width="${lW}" height="48" rx="2" fill="#333"/>
                 <line x1="${sx}" y1="2" x2="${sx}" y2="50" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
     } else {
-      // Label = left pct%
       svgInner=`<rect x="2" y="2" width="${lblW}" height="48" rx="2" fill="#00c5ff" opacity=".9"/>
                 <rect x="${splitX}" y="2" width="${invW}" height="48" rx="2" fill="#333"/>
                 <line x1="${splitX}" y1="2" x2="${splitX}" y2="50" stroke="#00c5ff" stroke-width="1.5" stroke-dasharray="4,3"/>`;
@@ -828,40 +1065,49 @@ function renderSplitDiagram(){
 
 function updateUI(){
   const cfg=CFG[curP];
-  const isV=cfg.split==='v';
   const isInv=curM==='invoice';
-  const pct=getActiveCrop();
-  const defPct=isInv?cfg.splitInvoice:cfg.splitLabel;
+  const isPages=cfg.split==='pages';
 
-  // Slider label — shows mode-specific split info
-  if(isV){
-    sliderLbl.textContent=isInv
-      ? `Invoice split — ${pct}% from left (Invoice: right ${100-pct}%)`
-      : `Label split — ${pct}% from left (Label: left ${pct}%)`;
+  // Crop card only applies to crop-based platforms
+  controlsCard.style.display=isPages?'none':'';
+
+  if(isPages){
+    splitTitle.textContent=isInv
+      ? 'Page split — pages 2, 4, 6 … extracted as Invoice'
+      : 'Page split — pages 1, 3, 5 … extracted as Shipping Label';
   } else {
-    sliderLbl.textContent=isInv
-      ? `Invoice split — ${pct}% from bottom (Invoice: bottom ${pct}%, Label top: ${100-pct}%)`
-      : `Label split — ${pct}% from bottom (Label: top ${100-pct}%, Invoice bottom: ${pct}%)`;
+    const isV=cfg.split==='v';
+    const pct=getActiveCrop();
+    const defPct=isInv?cfg.splitInvoice:cfg.splitLabel;
+
+    if(isV){
+      sliderLbl.textContent=isInv
+        ? `Invoice split — ${pct}% from left (Invoice: right ${100-pct}%)`
+        : `Label split — ${pct}% from left (Label: left ${pct}%)`;
+    } else {
+      sliderLbl.textContent=isInv
+        ? `Invoice split — ${pct}% from bottom (Invoice: bottom ${pct}%, Label top: ${100-pct}%)`
+        : `Label split — ${pct}% from bottom (Label: top ${100-pct}%, Invoice bottom: ${pct}%)`;
+    }
+
+    cropSlider.value=pct;
+    cropVal.textContent=pct+'%';
+
+    const help=isInv?cfg.helpInvoice:cfg.helpLabel;
+    sliderHelp.innerHTML=`<strong style="color:var(--primary)">${cfg.name} default: ${defPct}%</strong> &mdash; ${help}&nbsp; <em>Invoice and label have independent split values. Slider is remembered per platform &amp; per mode.</em>`;
+
+    if(isV){
+      splitTitle.textContent=isInv
+        ? `Vertical — right ${100-pct}% extracted as Invoice`
+        : `Vertical — left ${pct}% extracted as Label`;
+    } else {
+      splitTitle.textContent=isInv
+        ? `Horizontal — bottom ${pct}% extracted as Invoice`
+        : `Horizontal — top ${100-pct}% extracted as Label`;
+    }
   }
 
-  cropSlider.value=pct;
-  cropVal.textContent=pct+'%';
-
-  // Help text
-  const help=isInv?cfg.helpInvoice:cfg.helpLabel;
-  sliderHelp.innerHTML=`<strong style="color:var(--primary)">${cfg.name} default: ${defPct}%</strong> &mdash; ${help}&nbsp; <em>Invoice and label have independent split values. Slider is remembered per platform &amp; per mode.</em>`;
-
-  // Split legend
-  if(isV){
-    splitTitle.textContent=isInv
-      ? `Vertical — right ${100-pct}% extracted as Invoice`
-      : `Vertical — left ${pct}% extracted as Label`;
-  } else {
-    splitTitle.textContent=isInv
-      ? `Horizontal — bottom ${pct}% extracted as Invoice`
-      : `Horizontal — top ${100-pct}% extracted as Label`;
-  }
-  splitDesc.textContent=cfg.note;
+  splitDesc.innerHTML=isPages?(isInv?cfg.helpInvoice:cfg.helpLabel):cfg.note;
 
   btnLabel.textContent=isInv?'EXTRACT INVOICES':'EXTRACT SHIPPING LABELS';
   prevTitle.textContent=isInv?'EXTRACTED INVOICES':'EXTRACTED SHIPPING LABELS';
@@ -894,13 +1140,12 @@ $('modeGrid').addEventListener('click',e=>{
 });
 
 // Init from localStorage
-// v4 uses per-platform + per-mode keys ('meesho-invoice', 'shopsy-label', …)
-// Clear any stale keys from v1/v2/v3.
 const CROPS_VER = '8';
-const APP_VERSION = 'v2.8';   // ← bump this whenever a new update is deployed
 
-// Display version in header badge and footer badge
+// Display version in header badge, footer badge and menu
 document.querySelectorAll('.ver-badge').forEach(el => el.textContent = APP_VERSION);
+const miVerEl=$('miVer'); if(miVerEl) miVerEl.textContent=APP_VERSION;
+
 if(ls.get('ibi-crops-ver','') !== CROPS_VER){
   ls.set('ibi-crops-ver', CROPS_VER);
   ls.setJ('ibi-crops', {});
@@ -915,12 +1160,14 @@ setMode(sm==='label'?'label':'invoice');
    CROP SLIDER EVENTS
    ================================================================ */
 cropSlider.addEventListener('input',()=>{
+  if(CFG[curP].split==='pages') return;
   const key=curP+'-'+curM;
   crops[key]=parseInt(cropSlider.value,10);
   cropVal.textContent=cropSlider.value+'%';
   updateUI();
 });
 cropSlider.addEventListener('change',()=>{
+  if(CFG[curP].split==='pages') return;
   crops[curP+'-'+curM]=parseInt(cropSlider.value,10);
   ls.setJ('ibi-crops',crops);
 });
@@ -946,7 +1193,10 @@ function addFiles(raw){
   const skip=arr.length-pdfs.length;
   if(!pdfs.length){showToast('Please select PDF files only','err');return}
   pdfs.forEach(f=>{
-    if(!files.some(x=>x.name===f.name&&x.size===f.size)) files.push(f);
+    if(!files.some(x=>x.name===f.name&&x.size===f.size)){
+      files.push(f);
+      idbSaveFile(f);   // persist for next session (until Clear All)
+    }
   });
   renderFiles();
   processBtn.disabled=!files.length;
@@ -968,7 +1218,10 @@ function renderFiles(){
   });
   fileList.innerHTML=h;
   fileList.querySelectorAll('.fl-rm').forEach(b=>b.addEventListener('click',e=>{
-    files.splice(parseInt(e.currentTarget.dataset.i,10),1);
+    const i=parseInt(e.currentTarget.dataset.i,10);
+    const f=files[i];
+    if(f) idbDeleteFile(fileKey(f));
+    files.splice(i,1);
     renderFiles();
     processBtn.disabled=!files.length;
   }));
@@ -977,23 +1230,23 @@ function renderFiles(){
 function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function fmtSize(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB'}
 
+/* Restore persisted files from previous session */
+(async()=>{
+  try{
+    const recs=await idbAllFiles();
+    if(recs.length&&!files.length){
+      recs.sort((a,b)=>(a.ts||0)-(b.ts||0));
+      files=recs.map(r=>new File([r.data],r.name,{type:'application/pdf'}));
+      renderFiles();
+      processBtn.disabled=false;
+      showToast(`Restored ${recs.length} file${recs.length>1?'s':''} from last session`,'info');
+    }
+  }catch(e){console.warn('Restore failed:',e)}
+})();
+
 /* ================================================================
-   CROP ENGINE
-   ----------------------------------------------------------------
-   splitPct = the split line position for the CURRENT mode:
-     • Invoice mode: CFG[platform].splitInvoice (or user override)
-     • Label mode:   CFG[platform].splitLabel   (or user override)
-
-   Horizontal (h) — split line is at splitPct% from page bottom:
-     Invoice → bottom splitPct%   box: (0,      0,   W,              H·r)
-     Label   → top (100-splitPct)% box: (0,      H·r, W,              H·(1−r))
-
-   Vertical (v) — split line is at splitPct% from page left:
-     Label   → left  splitPct%    box: (0,      0,   W·r,            H)
-     Invoice → right (100-splitPct)% box: (W·r,   0,   W·(1−r),        H)
-
-   Invoice and label may share a small overlap zone (e.g. the dashed
-   separator line) intentionally, so each gets a clean visual border.
+   CROP ENGINE  (h / v platforms only — 'pages' platforms copy
+   whole pages and never call this)
    ================================================================ */
 function applyCrop(page, splitPct){
   const {width:W, height:H} = page.getSize();
@@ -1003,18 +1256,14 @@ function applyCrop(page, splitPct){
 
   if(cfg.split==='h'){
     if(curM==='invoice'){
-      // INVOICE → bottom r% of page
       x=0;   y=0;     w=W;       h=H*r;
     } else {
-      // LABEL → top (1−r)% of page, starting at the split line y=H·r
       x=0;   y=H*r;   w=W;       h=H*(1-r);
     }
   } else {
     if(curM==='invoice'){
-      // INVOICE → right (1−r)% of page, starting at split line x=W·r
       x=W*r; y=0;     w=W*(1-r); h=H;
     } else {
-      // LABEL → left r% of page
       x=0;   y=0;     w=W*r;     h=H;
     }
   }
@@ -1038,6 +1287,8 @@ processBtn.addEventListener('click', async ()=>{
   btnLabel.innerHTML='<span class="spinner"></span>&nbsp;PROCESSING…';
 
   try{
+    const cfg=CFG[curP];
+    const isPages=cfg.split==='pages';
     const pct=parseInt(cropSlider.value,10);
     const out=await PDFLib.PDFDocument.create();
     let pages=0, done=0;
@@ -1047,18 +1298,29 @@ processBtn.addEventListener('click', async ()=>{
       let src;
       try{ src=await PDFLib.PDFDocument.load(buf,{ignoreEncryption:true}); }
       catch(e){ console.warn('Skip:',f.name,e); continue; }
-      const copied=await out.copyPages(src, src.getPageIndices());
-      copied.forEach(pg=>{ applyCrop(pg,pct); out.addPage(pg); pages++; });
+
+      if(isPages){
+        // Page-based split: page 1,3,5… = label · page 2,4,6… = invoice
+        const indices=src.getPageIndices().filter(i=>curM==='label'?i%2===0:i%2===1);
+        if(!indices.length){ console.warn('No matching pages in:',f.name); continue; }
+        const copied=await out.copyPages(src, indices);
+        copied.forEach(pg=>{ out.addPage(pg); pages++; });
+      } else {
+        const copied=await out.copyPages(src, src.getPageIndices());
+        copied.forEach(pg=>{ applyCrop(pg,pct); out.addPage(pg); pages++; });
+      }
       done++;
     }
 
-    if(!pages) throw new Error('No readable pages found in the uploaded PDFs.');
+    if(!pages) throw new Error(isPages
+      ? 'No matching pages found — new-format ShopClues PDFs have 2 pages per order (page 1 = label, page 2 = invoice).'
+      : 'No readable pages found in the uploaded PDFs.');
 
-    const pName=CFG[curP].name;
+    const pName=cfg.name;
     const mName=curM==='invoice'?'Invoices':'Shipping Labels';
     out.setTitle(`IBI ${pName} ${mName}`);
     out.setAuthor('India Business International');
-    out.setProducer('IBI Invoice & Label Separator');
+    out.setProducer('IBI Invoice & Shipping Label Separator '+APP_VERSION);
     out.setCreationDate(new Date());
 
     outBytes=await out.save();
@@ -1072,7 +1334,8 @@ processBtn.addEventListener('click', async ()=>{
       <span class="m-pill">From <strong>${done}</strong> file${done>1?'s':''}</span>
       <span class="m-pill">Platform: <strong>${pName}</strong></span>
       <span class="m-pill"><strong>${fmtSize(outBytes.length)}</strong> output</span>
-      <span class="m-pill">Crop: <strong>${pct}%</strong></span>`;
+      <span class="m-pill">${isPages?'Mode: <strong>Page split</strong>':'Crop: <strong>'+pct+'%</strong>'}</span>
+      <span class="m-pill">Extracted: <strong>${fmtDateTime(new Date())}</strong></span>`;
 
     prevSec.classList.add('active');
     dlBtn.disabled=false;
@@ -1097,7 +1360,7 @@ dlBtn.addEventListener('click',()=>{
   const d=new Date().toISOString().slice(0,10);
   const a=document.createElement('a');
   a.href=outUrl;
-  a.download=`IBI_${CFG[curP].name}_${curM==='invoice'?'Invoices':'Labels'}_${d}.pdf`;
+  a.download=`IBI_${CFG[curP].name.replace(/[^A-Za-z0-9]/g,'')}_${curM==='invoice'?'Invoices':'Labels'}_${d}.pdf`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   showToast('Download started','info');
 });
@@ -1119,10 +1382,11 @@ printBtn.addEventListener('click',()=>{
 });
 
 /* ================================================================
-   CLEAR
+   CLEAR ALL — the ONLY action that wipes persisted files
    ================================================================ */
 clearBtn.addEventListener('click',()=>{
   files=[];
+  idbClearFiles();
   renderFiles();
   processBtn.disabled=true;
   prevSec.classList.remove('active');
@@ -1132,7 +1396,7 @@ clearBtn.addEventListener('click',()=>{
   if(outUrl){URL.revokeObjectURL(outUrl);outUrl=null}
   outBytes=null;
   fileInput.value='';
-  showToast('Cleared','info');
+  showToast('Cleared — persisted files removed','info');
   window.scrollTo({top:0,behavior:'smooth'});
 });
 
@@ -1146,6 +1410,91 @@ function showToast(msg,type){
   toast.className='toast toast-'+(type==='ok'?'ok':type==='err'?'err':'info')+' show';
   _tTimer=setTimeout(()=>toast.classList.remove('show'),3500);
 }
+
+/* ================================================================
+   SETTINGS MENU
+   ================================================================ */
+menuBtn.addEventListener('click',e=>{
+  e.stopPropagation();
+  const open=menuDrop.classList.toggle('open');
+  menuBtn.setAttribute('aria-expanded',open?'true':'false');
+});
+document.addEventListener('click',e=>{
+  if(!menuDrop.contains(e.target)&&e.target!==menuBtn){
+    menuDrop.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded','false');
+  }
+});
+$('miUpdate').addEventListener('click',async()=>{
+  menuDrop.classList.remove('open');
+  try{
+    if('serviceWorker' in navigator){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg) await reg.update();
+    }
+    showToast('Checking for updates — reloading…','info');
+    setTimeout(()=>location.reload(),800);
+  }catch(e){ location.reload(); }
+});
+
+/* ================================================================
+   PWA — service worker + install prompt
+   Banner re-appears 1 day after "Not now" (not 7).
+   Install is also always reachable: header button + settings menu.
+   ================================================================ */
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW register failed:',e));
+  });
+}
+
+let deferredPrompt=null;
+const PWA_DISMISS_MS=24*60*60*1000;   // 1 day banner cooldown
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
+}
+function showPwaBanner(){ pwaBanner.classList.add('show'); }
+function hidePwaBanner(){ pwaBanner.classList.remove('show'); }
+
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  if(isStandalone()) return;
+  installBtn.hidden=false;
+  const dismissed=parseInt(ls.get('ibi-pwa-dismissed','0'),10);
+  if(Date.now()-dismissed>PWA_DISMISS_MS) setTimeout(showPwaBanner,1600);
+});
+
+async function doInstall(){
+  hidePwaBanner();
+  menuDrop.classList.remove('open');
+  if(!deferredPrompt){
+    if(isStandalone()){ showToast('App is already installed ✓','ok'); return; }
+    showToast('Install prompt not available — use your browser menu → "Install app" / "Add to Home screen"','info');
+    return;
+  }
+  deferredPrompt.prompt();
+  try{
+    const {outcome}=await deferredPrompt.userChoice;
+    if(outcome==='accepted'){ installBtn.hidden=true; }
+    else ls.set('ibi-pwa-dismissed',String(Date.now()));
+  }catch(e){}
+  deferredPrompt=null;
+}
+installBtn.addEventListener('click',doInstall);
+$('pwaInstallBtn').addEventListener('click',doInstall);
+$('miInstall').addEventListener('click',doInstall);
+$('pwaLaterBtn').addEventListener('click',()=>{
+  hidePwaBanner();
+  ls.set('ibi-pwa-dismissed',String(Date.now()));
+});
+
+window.addEventListener('appinstalled',()=>{
+  installBtn.hidden=true;
+  hidePwaBanner();
+  ls.set('ibi-pwa-installed','1');
+  showToast('IBI Separator installed ✓','ok');
+});
 
 /* ================================================================
    KEYBOARD SHORTCUT  Ctrl/Cmd+P → print
