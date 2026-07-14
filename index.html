@@ -33,6 +33,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 
 <style>
 /* ============================================================
@@ -605,7 +606,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <header>
   <div class="header-inner">
     <div class="header-left">
-      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.3</span>
+      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.4</span>
       <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
         <g fill="#00c5ff">
           <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
@@ -645,7 +646,7 @@ footer .brand{color:var(--primary);font-weight:700}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Check for Updates
           </button>
-          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.3</strong><br>India Business International</div>
+          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.4</strong><br>India Business International</div>
         </div>
       </div>
     </div>
@@ -789,7 +790,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <footer>
   <div>Built for <span class="brand">India Business International</span> &middot; <span style="color:#00c5ff">eCommerce for the World</span></div>
   <div style="margin-top:7px">
-    <span class="ver-badge" style="font-size:11px">v3.3</span>
+    <span class="ver-badge" style="font-size:11px">v3.4</span>
     &nbsp;&middot;&nbsp; All processing happens locally in your browser &middot; No data leaves your device
   </div>
 </footer>
@@ -816,7 +817,7 @@ footer .brand{color:var(--primary);font-weight:700}
    VERSION — bump on every update (minor: v3.1, major: v4)
    Also bump CACHE name in sw.js to match.
    ================================================================ */
-const APP_VERSION = 'v3.3';
+const APP_VERSION = 'v3.4';
 
 /* ================================================================
    PLATFORM CONFIGURATION TABLE
@@ -839,12 +840,12 @@ const APP_VERSION = 'v3.3';
    ================================================================ */
 const CFG = {
   flipkart: {
-    name:'Flipkart', split:'h',
-    splitInvoice: 55,   // invoice = bottom 55 % — dashed line is the TOP border of the invoice
-    splitLabel:   54,   // label   = top 46 %
-    helpInvoice:'Bottom <strong>55%</strong> — dashed separator line is the top border → "Tax Invoice" header → Sold By / Billing / Shipping → item table → Authorized Signature.',
-    helpLabel:'Top <strong>46%</strong> — page top → E-Kart barcode → AWB → customer address → SKU table → "Not for resale" line. Decrease by 1 % if label content is clipped at the bottom; increase if invoice text appears.',
-    note:'Flipkart: label split 54 %, invoice split 55 %. Dashed line appears as top border of invoice, not visible in label.'
+    name:'Flipkart', split:'h', autoDetect:true,
+    splitInvoice: 55,   // fallback only — invoice = bottom 55 %
+    splitLabel:   54,   // fallback only — label   = top 46 %
+    helpInvoice:'<strong>Auto-fit</strong> — the new Flipkart "Invoice cum Shipping Label" is detected automatically: the Tax Invoice block (Sold By / Billing / Shipping → item table → Authorized Signature) is cropped tightly with blank margins removed, so it fills the page. The slider is only a fallback if auto-detect can\'t run (e.g. offline).',
+    helpLabel:'<strong>Auto-fit</strong> — Flipkart now prints the shipping label as a narrow centred column, so it is detected and cropped tightly (E-Kart barcode → AWB → customer address → SKU table → "Not for resale"). This removes the wide side margins that used to make the extracted label look tiny. The slider is only a fallback if auto-detect can\'t run (e.g. offline).',
+    note:'Flipkart (new 2026 layout): the cut line moves per order and the label is a centred column. The app auto-detects the Tax Invoice boundary and crops each part tightly — no manual slider needed. Falls back to a 54/55 % split only if detection is unavailable.'
   },
   amazon: {
     name:'Amazon', split:'v',
@@ -1292,6 +1293,97 @@ function applyCrop(page, splitPct){
   page.setBleedBox(x, y, w, h);
 }
 
+/* Apply an explicit rectangle (PDF points, bottom-left origin) to a page. */
+function applyRect(page, r){
+  page.setMediaBox(r.x, r.y, r.w, r.h);
+  page.setCropBox(r.x, r.y, r.w, r.h);
+  page.setTrimBox(r.x, r.y, r.w, r.h);
+  page.setBleedBox(r.x, r.y, r.w, r.h);
+}
+
+/* ================================================================
+   AUTO-DETECT CROP  (Flipkart new 2026 "Invoice cum Shipping Label")
+   ----------------------------------------------------------------
+   Flipkart now prints the shipping label as a narrow CENTRED column
+   and moves the dashed cut line per order (label height depends on the
+   address). A fixed % split therefore either leaves the label tiny
+   (huge side margins) or clips short invoices.
+
+   Using pdf.js we read the text positions, find the "Tax Invoice"
+   header (top of the invoice block) as the boundary, then crop the
+   requested half tightly to its real content bounding box. pdf.js
+   text-item transforms are in PDF user space (bottom-left origin,
+   points) — the same space pdf-lib uses — so the rect maps directly.
+
+   Returns an array (one rect per page) of {x,y,w,h} in PDF points, or
+   null for a page whose boundary could not be found (caller falls back
+   to the fixed % crop).
+   ================================================================ */
+const PDFJS = window.pdfjsLib || null;
+if(PDFJS){
+  try{ PDFJS.GlobalWorkerOptions.workerSrc =
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js'; }catch(e){}
+}
+const AUTO_PAD = 8;   // points of breathing room around detected content
+
+async function autoDetectCrops(buf, mode){
+  if(!PDFJS) return null;
+  const doc = await PDFJS.getDocument({ data: new Uint8Array(buf).slice(0) }).promise;
+  const rects = [];
+  try{
+    for(let n=1; n<=doc.numPages; n++){
+      const page = await doc.getPage(n);
+      const vp = page.getViewport({ scale:1 });
+      const W = vp.width, H = vp.height;
+      let tc;
+      try{ tc = await page.getTextContent(); }
+      catch(e){ rects.push(null); continue; }
+
+      // Build text boxes in PDF space (bottom-left origin).
+      const items = [];
+      for(const it of tc.items){
+        const s = (it.str||'').trim();
+        if(!s) continue;
+        const x = it.transform[4], yb = it.transform[5];
+        const h = it.height || 0, w = it.width || 0;
+        items.push({ left:x, right:x+w, bottom:yb, top:yb+h, s });
+      }
+
+      // Boundary = top edge of the "Tax Invoice" header (highest such match).
+      let by = null;
+      const bump = t => { by = (by===null) ? t : Math.max(by, t); };
+      for(const it of items) if(/tax\s*invoice/i.test(it.s)) bump(it.top);
+      if(by === null){
+        const taxes = items.filter(it => /^tax$/i.test(it.s));
+        for(const t of taxes){
+          const inv = items.find(it => /^invoice$/i.test(it.s) &&
+            Math.abs(it.bottom - t.bottom) < 3 && it.left > t.left);
+          if(inv) bump(t.top);
+        }
+      }
+      if(by === null){ rects.push(null); continue; }
+
+      // Select the half we want and take its tight bounding box.
+      const sel = (mode === 'label')
+        ? items.filter(it => it.bottom > by - 2)   // above the cut line
+        : items.filter(it => it.top   <= by + 2);  // at / below the cut line
+      if(!sel.length){ rects.push(null); continue; }
+
+      let x0 = Math.min(...sel.map(i => i.left));
+      let y0 = Math.min(...sel.map(i => i.bottom));
+      let x1 = Math.max(...sel.map(i => i.right));
+      let y1 = Math.max(...sel.map(i => i.top));
+      x0 = Math.max(0, x0 - AUTO_PAD);  y0 = Math.max(0, y0 - AUTO_PAD);
+      x1 = Math.min(W, x1 + AUTO_PAD);  y1 = Math.min(H, y1 + AUTO_PAD);
+      if(x1 - x0 < 10 || y1 - y0 < 10){ rects.push(null); continue; }
+      rects.push({ x:x0, y:y0, w:x1 - x0, h:y1 - y0 });
+    }
+  } finally {
+    try{ await doc.destroy(); }catch(e){}
+  }
+  return rects;
+}
+
 /* ================================================================
    PROCESS
    ================================================================ */
@@ -1324,8 +1416,19 @@ processBtn.addEventListener('click', async ()=>{
         const copied=await out.copyPages(src, indices);
         copied.forEach(pg=>{ out.addPage(pg); pages++; });
       } else {
+        // Auto-detect tight crop where the platform supports it (Flipkart);
+        // any page that can't be detected falls back to the fixed % crop.
+        let autoRects=null;
+        if(cfg.autoDetect){
+          try{ autoRects=await autoDetectCrops(buf, curM); }
+          catch(e){ console.warn('Auto-detect failed, using fixed crop:',f.name,e); autoRects=null; }
+        }
         const copied=await out.copyPages(src, src.getPageIndices());
-        copied.forEach(pg=>{ applyCrop(pg,pct); out.addPage(pg); pages++; });
+        copied.forEach((pg,idx)=>{
+          const r=autoRects && autoRects[idx];
+          if(r) applyRect(pg,r); else applyCrop(pg,pct);
+          out.addPage(pg); pages++;
+        });
       }
       done++;
     }

@@ -2,7 +2,7 @@
    IBI Invoice & Shipping Label Separator — Service Worker
    Bump CACHE version together with APP_VERSION in index.html.
    ============================================================ */
-const CACHE = 'ibi-invsep-v3.3';
+const CACHE = 'ibi-invsep-v3.4';
 const ASSETS = [
   './',
   './index.html',
