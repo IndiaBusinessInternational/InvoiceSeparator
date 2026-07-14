@@ -606,7 +606,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <header>
   <div class="header-inner">
     <div class="header-left">
-      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.5</span>
+      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.6</span>
       <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
         <g fill="#00c5ff">
           <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
@@ -646,7 +646,7 @@ footer .brand{color:var(--primary);font-weight:700}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Check for Updates
           </button>
-          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.5</strong><br>India Business International</div>
+          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.6</strong><br>India Business International</div>
         </div>
       </div>
     </div>
@@ -790,7 +790,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <footer>
   <div>Built for <span class="brand">India Business International</span> &middot; <span style="color:#00c5ff">eCommerce for the World</span></div>
   <div style="margin-top:7px">
-    <span class="ver-badge" style="font-size:11px">v3.5</span>
+    <span class="ver-badge" style="font-size:11px">v3.6</span>
     &nbsp;&middot;&nbsp; All processing happens locally in your browser &middot; No data leaves your device
   </div>
 </footer>
@@ -817,7 +817,7 @@ footer .brand{color:var(--primary);font-weight:700}
    VERSION — bump on every update (minor: v3.1, major: v4)
    Also bump CACHE name in sw.js to match.
    ================================================================ */
-const APP_VERSION = 'v3.5';
+const APP_VERSION = 'v3.6';
 
 /* ================================================================
    PLATFORM CONFIGURATION TABLE
@@ -857,12 +857,12 @@ const CFG = {
     note:'Amazon: vertical split at 50 %. Label = left half, Invoice = right half — both with the blank bottom trimmed off (slider sets the kept height).'
   },
   meesho: {
-    name:'Meesho', split:'h',
-    splitInvoice: 59,   // invoice = bottom 59 % — "TAX INVOICE" is the topmost invoice element
-    splitLabel:   58,   // label   = top 42 % — ends at Product Details / SKU content
-    helpInvoice:'Bottom <strong>59%</strong> — <em>"TAX INVOICE | Original For Recipient"</em> header is the first visible element → Bill To/Ship To → Sold By → GSTIN → item table → totals → footer. Increase by 1 % if TAX INVOICE header disappears; decrease if SKU product text bleeds in at top.',
-    helpLabel:'Top <strong>42%</strong> — customer address → Delhivery/barcode → Product Details → SKU product name as last visible line. "TAX INVOICE" row falls just below the crop boundary. Decrease by 1 % if SKU content is clipped; increase if TAX INVOICE row appears at bottom.',
-    note:'Meesho: invoice slider 59 % (bottom 59 % kept), label slider 58 % (top 42 % kept). Gap zone contains the TAX INVOICE separator — belongs to invoice only.'
+    name:'Meesho', split:'h', autoDetect:true, fullWidth:true,
+    splitInvoice: 59,   // fallback only — invoice = bottom 59 %
+    splitLabel:   58,   // fallback only — label   = top 42 %
+    helpInvoice:'<strong>Auto-fit</strong> — the invoice is detected from the <em>"TAX INVOICE"</em> row down to its last line (Bill To/Ship To → Sold By → GSTIN → item table → totals → footer), full width, with the blank bottom trimmed. No label content bleeds in at the top. The slider is only a fallback if auto-detect can\'t run (e.g. offline).',
+    helpLabel:'<strong>Auto-fit</strong> — the label is detected from the page top down to the end of Product Details / SKU (customer address → Delhivery barcode → Product Details), full width, stopping just above the "TAX INVOICE" row so nothing is clipped. The slider is only a fallback if auto-detect can\'t run (e.g. offline).',
+    note:'Meesho (new 2026 layout): the TAX INVOICE row moves per order (address length). The app auto-detects it and crops the label (above) and invoice (below) tightly at full width — fixing the clipped SKU row and the label text that used to bleed into the invoice. Falls back to a 58/59 % split only if detection is unavailable.'
   },
   shopsy: {
     name:'Shopsy', split:'h', autoDetect:true,
@@ -1326,7 +1326,7 @@ if(PDFJS){
 }
 const AUTO_PAD = 8;   // points of breathing room around detected content
 
-async function autoDetectCrops(buf, mode){
+async function autoDetectCrops(buf, mode, fullWidth){
   if(!PDFJS) return null;
   const doc = await PDFJS.getDocument({ data: new Uint8Array(buf).slice(0) }).promise;
   const rects = [];
@@ -1373,8 +1373,12 @@ async function autoDetectCrops(buf, mode){
       let y0 = Math.min(...sel.map(i => i.bottom));
       let x1 = Math.max(...sel.map(i => i.right));
       let y1 = Math.max(...sel.map(i => i.top));
-      x0 = Math.max(0, x0 - AUTO_PAD);  y0 = Math.max(0, y0 - AUTO_PAD);
-      x1 = Math.min(W, x1 + AUTO_PAD);  y1 = Math.min(H, y1 + AUTO_PAD);
+      // fullWidth platforms (Meesho): keep the whole page width — only the
+      // vertical boundary needs detecting; the label/invoice already span the
+      // full width, and barcodes may sit outside the text bounding box.
+      if(fullWidth){ x0 = 0; x1 = W; }
+      else { x0 = Math.max(0, x0 - AUTO_PAD);  x1 = Math.min(W, x1 + AUTO_PAD); }
+      y0 = Math.max(0, y0 - AUTO_PAD);  y1 = Math.min(H, y1 + AUTO_PAD);
       if(x1 - x0 < 10 || y1 - y0 < 10){ rects.push(null); continue; }
       rects.push({ x:x0, y:y0, w:x1 - x0, h:y1 - y0 });
     }
@@ -1420,7 +1424,7 @@ processBtn.addEventListener('click', async ()=>{
         // any page that can't be detected falls back to the fixed % crop.
         let autoRects=null;
         if(cfg.autoDetect){
-          try{ autoRects=await autoDetectCrops(buf, curM); }
+          try{ autoRects=await autoDetectCrops(buf, curM, cfg.fullWidth); }
           catch(e){ console.warn('Auto-detect failed, using fixed crop:',f.name,e); autoRects=null; }
         }
         const copied=await out.copyPages(src, src.getPageIndices());
