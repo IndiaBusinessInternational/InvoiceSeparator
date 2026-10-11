@@ -592,7 +592,7 @@ footer .brand{color:var(--primary);font-weight:700}
   .banner{padding-left:10px;padding-right:10px;box-shadow:none}
   .process-row{padding:0 10px}
   footer{padding-left:10px;padding-right:10px}
-  .card,.banner,.hero{overflow-wrap:anywhere}
+  .card,.banner,.hero{overflow-wrap:break-word}   /* v3.8: not anywhere — it split button labels mid-word */
 }
 @media(max-width:480px){
   .ibi-logo{height:42px}
@@ -620,7 +620,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <header>
   <div class="header-inner">
     <div class="header-left">
-      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.7</span>
+      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.8</span>
       <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
         <g fill="#00c5ff">
           <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
@@ -660,7 +660,7 @@ footer .brand{color:var(--primary);font-weight:700}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Check for Updates
           </button>
-          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.7</strong><br>India Business International</div>
+          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.8</strong><br>India Business International</div>
         </div>
       </div>
     </div>
@@ -804,7 +804,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <footer>
   <div>Built for <span class="brand">India Business International</span> &middot; <span style="color:#00c5ff">eCommerce for the World</span></div>
   <div style="margin-top:7px">
-    <span class="ver-badge" style="font-size:11px">v3.7</span>
+    <span class="ver-badge" style="font-size:11px">v3.8</span>
     &nbsp;&middot;&nbsp; All processing happens locally in your browser &middot; No data leaves your device
   </div>
 </footer>
@@ -831,7 +831,7 @@ footer .brand{color:var(--primary);font-weight:700}
    VERSION — bump on every update (minor: v3.1, major: v4)
    Also bump CACHE name in sw.js to match.
    ================================================================ */
-const APP_VERSION = 'v3.7';
+const APP_VERSION = 'v3.8';
 
 /* ================================================================
    PLATFORM CONFIGURATION TABLE
