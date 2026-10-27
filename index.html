@@ -604,6 +604,32 @@ footer .brand{color:var(--primary);font-weight:700}
   .prev-iframe{height:420px}
   .platform-grid{grid-template-columns:repeat(2,1fr)}
 }
+/* v3.10 EDGE TO EDGE ON EVERY SCREEN SIZE (Founder 27 Oct 2026: "make all the apps edge to edge on laptop too").
+   The phone spacing now applies at every width: no centred 1100px main or 1300px header, no side gutter,
+   full-bleed cards and banner (no side border, radius or shadow), 10px inner side padding (header 8px), page never
+   wider than the screen (clip, not hidden). Wide screens put Setup beside Upload + Crop settings; the extracted
+   preview runs the full width below. Spacing only, no font sizes. */
+html,body{overflow-x:clip}
+header{padding-left:8px;padding-right:8px}
+.header-inner,.dt-bar{max-width:none}
+main{max-width:none;margin:0;padding:18px 0 8px}
+.hero{padding:0 10px}
+main .banner{border-radius:0;border-left:none;border-right:none;box-shadow:none;padding-left:10px;padding-right:10px;margin-bottom:8px}
+main .card{border-radius:0;border-left:none;border-right:none;box-shadow:none;padding:16px 10px;margin-bottom:8px}
+.process-row{padding:0 10px}
+footer{padding-left:10px;padding-right:10px}
+.card,.banner,.hero{overflow-wrap:break-word}
+@media(min-width:1000px){
+  main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:8px;align-items:start;
+    grid-template-areas:"hero hero" "banner banner" "setup upload" "setup controls" "process process" "preview preview"}
+  main > .hero{grid-area:hero}
+  main > .banner{grid-area:banner}
+  main > .setup-card{grid-area:setup;align-self:stretch}
+  main > .upload-card{grid-area:upload}
+  main > .controls-card{grid-area:controls}
+  main > .process-row{grid-area:process}
+  main > .preview-sec{grid-area:preview}
+}
 
 /* ============================================================
    PRINT
@@ -623,7 +649,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <header>
   <div class="header-inner">
     <div class="header-left">
-      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.9</span>
+      <span class="ver-badge" id="appVerBadge" title="IBI Invoice &amp; Shipping Label Separator version">v3.10</span>
       <svg class="ibi-logo" viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" aria-label="India Business International">
         <g fill="#00c5ff">
           <circle cx="22" cy="22" r="5"/><circle cx="22" cy="62" r="5"/><circle cx="22" cy="102" r="5"/><circle cx="22" cy="142" r="5"/><circle cx="22" cy="182" r="5"/>
@@ -663,7 +689,7 @@ footer .brand{color:var(--primary);font-weight:700}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             Check for Updates
           </button>
-          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.9</strong><br>India Business International</div>
+          <div class="menu-note">IBI Invoice &amp; Shipping Label Separator <strong id="miVer">v3.10</strong><br>India Business International</div>
         </div>
       </div>
     </div>
@@ -807,7 +833,7 @@ footer .brand{color:var(--primary);font-weight:700}
 <footer>
   <div>Built for <span class="brand">India Business International</span> &middot; <span style="color:#00c5ff">eCommerce for the World</span></div>
   <div style="margin-top:7px">
-    <span class="ver-badge" style="font-size:11px">v3.9</span>
+    <span class="ver-badge" style="font-size:11px">v3.10</span>
     &nbsp;&middot;&nbsp; All processing happens locally in your browser &middot; No data leaves your device
   </div>
 </footer>
@@ -834,7 +860,7 @@ footer .brand{color:var(--primary);font-weight:700}
    VERSION — bump on every update (minor: v3.1, major: v4)
    Also bump CACHE name in sw.js to match.
    ================================================================ */
-const APP_VERSION = 'v3.9';
+const APP_VERSION = 'v3.10';
 
 /* ================================================================
    PLATFORM CONFIGURATION TABLE
